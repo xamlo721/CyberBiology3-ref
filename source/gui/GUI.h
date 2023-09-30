@@ -25,8 +25,7 @@ public:
 		WindowHeight 
 	};
 
-	//Keyboard
-	const Uint8* keyboard;
+	//
 
 	//FPS
 	int limitFPS = LimitFPSAtStart;
@@ -81,5 +80,4 @@ public:
 	void Render();
 
 
-	void CatchKeyboard();
 };

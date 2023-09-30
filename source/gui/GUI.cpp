@@ -810,7 +810,7 @@ void ApplicationGUIManager::HighlightSelection()
 					return;
 			}
 
-			//ObjectRenderer::drawOne(Simulation::INSTANCE()->selectedObject, worker);
+			//FIXME: ObjectRenderer::drawOne(Simulation::INSTANCE()->selectedObject, worker);
 		}
 	}
 }
@@ -997,100 +997,5 @@ void ApplicationGUIManager::Render()
 
 		realFPS = fpsCounter;
 		fpsCounter = 0;
-	}
-}
-
-
-void ApplicationGUIManager::CatchKeyboard() {
-
-	if (keyboard[Keyboard_Pause] || keyboard[Keyboard_Pause2]) {
-		Simulation::INSTANCE()->Pause();
-	}
-	else if (keyboard[Keyboard_SpawnRandoms]) {
-		Simulation::INSTANCE()->worldController->SpawnControlGroup();
-	}
-	else if (keyboard[Keyboard_PlaceWall])
-	{
-		repeat(FieldCellsHeight)
-			Simulation::INSTANCE()->worldController->gameWorld->AddObject(new Rock(0, i));
-	}
-	else if (keyboard[Keyboard_DropOrganics])
-	{
-		for (int X = 0; X < FieldCellsWidth; ++X)
-		{
-			for (int Y = 0; Y < 25 + RandomVal(20); ++Y)
-			{
-				Simulation::INSTANCE()->worldController->gameWorld->AddObject(new Organics(X, Y, MaxPossibleEnergyForABot / 2));
-			}
-		}
-	}
-	else if (keyboard[Keyboard_NextFrame])
-	{
-		if (!Simulation::INSTANCE()->simulate) {
-			Simulation::INSTANCE()->MakeStep();
-		}
-	}
-	else if (keyboard[Keyboard_RenderNatural])
-	{
-		renderType = EnumRenderTypes::natural;
-	}
-	else if (keyboard[Keyboard_RenderPredators])
-	{
-		renderType = EnumRenderTypes::predators;
-	}
-	else if (keyboard[Keyboard_RenderEnergy])
-	{
-		renderType = EnumRenderTypes::energy;
-	}
-	else if (keyboard[Keyboard_NoRender])
-	{
-		renderType = EnumRenderTypes::noRender;
-	}
-	else if (keyboard[SDL_SCANCODE_RIGHT])
-	{
-		Simulation::INSTANCE()->worldController->worldRenderer.shiftRenderPoint((io->KeyShift) ? MoveCameraFastSpeed : MoveCameraSpeed);
-	}
-	else if (keyboard[SDL_SCANCODE_LEFT])
-	{
-		Simulation::INSTANCE()->worldController->worldRenderer.shiftRenderPoint((io->KeyShift) ? -MoveCameraFastSpeed : -MoveCameraSpeed);
-	}
-	else if (keyboard[Keyboard_Reset_RenderX])
-	{
-		Simulation::INSTANCE()->worldController->worldRenderer.renderX = 0;
-	}
-	else if (keyboard[Keyboard_Jump_Up_RenderX])
-	{
-		Simulation::INSTANCE()->worldController->worldRenderer.shiftRenderPoint(MoveCameraJump);
-	}
-	else if (keyboard[Keyboard_Jump_Down_RenderX])
-	{
-		Simulation::INSTANCE()->worldController->worldRenderer.shiftRenderPoint(-MoveCameraJump);
-	}
-	else if (keyboard[Keyboard_Jump_To_First_bot])
-	{
-		Simulation::INSTANCE()->worldController->jumpToFirstBot();
-	}
-	//Additional windows hotkeys
-	else if (keyboard[Keyboard_ShowSaveLoad_Window])
-	{
-		Simulation::INSTANCE()->LoadFilenames();
-
-		showSaveLoad = !showSaveLoad;
-	}
-	else if (keyboard[Keyboard_ShowDangerous_Window])
-	{
-		showDangerous = !showDangerous;
-	}
-	else if (keyboard[Keyboard_ShowAdaptation_Window])
-	{
-		showAdaptation = !showAdaptation;
-	}
-	else if (keyboard[Keyboard_ShowChart_Window])
-	{
-		showChart = !showChart;
-	}
-	else if (keyboard[Keyboard_ShowBrain_Window])
-	{
-		showBrain = !showBrain;
 	}
 }

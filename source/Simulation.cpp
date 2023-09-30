@@ -314,7 +314,7 @@ Simulation::Simulation()
 
 	LoadFilenames();
 
-	gui.keyboard = SDL_GetKeyboardState(NULL);
+	
 }
 
 Simulation::~Simulation() {

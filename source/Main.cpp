@@ -19,6 +19,7 @@
 
 #include "Simulation.h"
 #include "resourceLoader/TextureLoader.h"
+#include "devices/MyKeyBoard.h"
 
 #if defined(_WIN32)
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR    lpCmdLine, _In_ int       nCmdShow) {
@@ -43,35 +44,31 @@ int main(int argc, char* argv[]) {}
 
 	//Main loop	
 	SDL_Event e;
+	const Uint8*  keyboard = SDL_GetKeyboardState(NULL);
 
 	for (;;)
 	{
 		//Events
 		mouseState.wheel = 0;
 
-		while (SDL_PollEvent(&e) != 0)
-		{
-			if (e.type == SDL_QUIT)
-			{
+		while (SDL_PollEvent(&e) != 0) {
+
+			if (e.type == SDL_QUIT) {
 				goto exitfor;
 			}
-			else if (e.type == SDL_MOUSEWHEEL)
-			{
+			else if (e.type == SDL_MOUSEWHEEL) {
 				mouseState.wheel = e.wheel.y;
 			}
-			else if (e.type == SDL_KEYDOWN)
-			{
-				simulation.gui.CatchKeyboard();
+			else if (e.type == SDL_KEYDOWN) {
+				MyKeyBoard::CatchKeyboard(keyboard);
 			}
-			else if (e.type == SDL_TEXTINPUT)
-			{
+			else if (e.type == SDL_TEXTINPUT) {
 				io->AddInputCharacter(*e.text.text);
 			}
 		}
 
 		//Mouse down event
-		if (ReadMouseState())
-		{
+		if (ReadMouseState()) {
 			simulation.gui.MouseClick();
 		}
 
@@ -88,8 +85,9 @@ int main(int argc, char* argv[]) {}
 
 		simulation.gui.Render();
 
-		if (simulation.terminate)
+		if (simulation.terminate) {
 			goto exitfor;
+		}
 
 	}
 exitfor:
