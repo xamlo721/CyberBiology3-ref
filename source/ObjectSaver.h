@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Field.h"
+#include "world/World.h"
 
 
 
@@ -40,13 +40,13 @@ public:
     bool SaveObject(Object* obj, char* filename);
     Object* LoadObject(char* filename);
 
-    bool SaveWorld(Field* world, char* filename, int id, int ticknum);
+    bool SaveWorld(World* world, char* filename, int id, int ticknum);
 
     struct WorldParams
     {
         int id, seed, tick, width;
     };
 
-    WorldParams LoadWorld(Field* world, char* filename);
+    WorldParams LoadWorld(World* world, char* filename);
 
 };

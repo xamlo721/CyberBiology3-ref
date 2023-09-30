@@ -1,6 +1,14 @@
 
-#include "Field.h"
 
+#include "ObjectSaver.h"
+
+#include "entity/Organics.h"
+#include "entity/Apple.h"
+#include "entity/Rock.h"
+#include "entity/Bot.h"
+#include "entity/EnumObjectType.h"
+
+#include "world/World.h"
 
 Bot* ObjectSaver::LoadBotFromFile(MyInputStream& file)
 {
@@ -42,19 +50,21 @@ Object* ObjectSaver::LoadObjectFromFile(MyInputStream& file)
 {
     Object* toRet;
 
-    switch ((ObjectTypes)file.ReadInt())
+    uint objectType = file.ReadInt();
+
+    switch ((EnumObjectType::ObjectTypes)objectType)
     {
-    case bot:
+    case EnumObjectType::bot:
         return LoadBotFromFile(file);
 
-    case rock:
+    case EnumObjectType::rock:
         toRet = new Rock(0, 0);
 
         toRet->SetLifetime(file.ReadInt());
 
         return toRet;
 
-    case apple:
+    case EnumObjectType::apple:
         toRet = new Apple(0, 0);
 
         toRet->SetLifetime(file.ReadInt());
@@ -62,7 +72,7 @@ Object* ObjectSaver::LoadObjectFromFile(MyInputStream& file)
 
         return toRet;
 
-    case organic_waste:
+    case EnumObjectType::organic_waste:
         toRet = new Organics(0, 0, 0);
 
         toRet->SetLifetime(file.ReadInt());
@@ -74,7 +84,7 @@ Object* ObjectSaver::LoadObjectFromFile(MyInputStream& file)
     return NULL;
 }
 
-ObjectSaver::WorldParams ObjectSaver::LoadWorld(Field* world, char* filename)
+ObjectSaver::WorldParams ObjectSaver::LoadWorld(World* world, char* filename)
 {
     WorldParams toRet;
     Object* tmpObj;
@@ -151,7 +161,7 @@ ObjectSaver::WorldParams ObjectSaver::LoadWorld(Field* world, char* filename)
 
     following all objects
 */
-bool ObjectSaver::SaveWorld(Field* world, char* filename, int id, int ticknum)
+bool ObjectSaver::SaveWorld(World* world, char* filename, int id, int ticknum)
 {
     MyOutStream file(filename, std::ios::in | std::ios::binary | std::ios::trunc);
     Object* tmpObj;
@@ -182,7 +192,7 @@ bool ObjectSaver::SaveWorld(Field* world, char* filename, int id, int ticknum)
                     WriteObjectToFile(file, tmpObj);
                 else
                 {
-                    file.WriteInt(ObjectTypes::abstract);
+                    file.WriteInt(EnumObjectType::abstract);
                 }
             }
         }
@@ -207,9 +217,9 @@ void ObjectSaver::WriteBotToFile(MyOutStream& file, Bot* obj)
     file.WriteInt(NeuronsInLayer);
     file.WriteInt(sizeof(Neuron));
 
-    file.WriteInt((obj)->GetColor()->r);
-    file.WriteInt((obj)->GetColor()->g);
-    file.WriteInt((obj)->GetColor()->b);
+    file.WriteInt((obj)->GetColor().r);
+    file.WriteInt((obj)->GetColor().g);
+    file.WriteInt((obj)->GetColor().b);
 
     repeat(NumberOfMutationMarkers)
     {
@@ -228,23 +238,23 @@ void ObjectSaver::WriteObjectToFile(MyOutStream& file, Object* obj)
 {
     switch (obj->type)
     {
-    case bot:
+    case EnumObjectType::bot:
         WriteBotToFile(file, (Bot*)obj);
         break;
 
-    case rock:
-        file.WriteInt(ObjectTypes::rock);
+    case EnumObjectType::rock:
+        file.WriteInt(EnumObjectType::rock);
         file.WriteInt(obj->GetLifetime());
         break;
 
-    case apple:
-        file.WriteInt(ObjectTypes::apple);
+    case EnumObjectType::apple:
+        file.WriteInt(EnumObjectType::apple);
         file.WriteInt(obj->GetLifetime());
         file.WriteInt(obj->energy);
         break;
 
-    case organic_waste:
-        file.WriteInt(ObjectTypes::organic_waste);
+    case EnumObjectType::organic_waste:
+        file.WriteInt(EnumObjectType::organic_waste);
         file.WriteInt(obj->GetLifetime());
         file.WriteInt(obj->energy);
         break;

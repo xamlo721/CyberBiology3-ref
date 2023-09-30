@@ -1,7 +1,8 @@
 
+
 set(SRC
-    Bot.cpp
-    Bot.h
+
+    Main.cpp
 
     BotNeuralNet.cpp
     BotNeuralNet.h
@@ -15,35 +16,47 @@ set(SRC
     Settings.h
     Systems.h
 
-    Bot.cpp
-    Bot.h
+    logic/BotNeuralNet.cpp
+    logic/BotNeuralNet.h
 
-    BotNeuralNet.cpp
-    BotNeuralNet.h
+    logic/NeuralNetRenderer.cpp
+    logic/NeuralNetRenderer.h
 
-    Field.cpp
-    Field.h
+    logic/Neuron.cpp
+    logic/Neuron.h
 
-    Main.cpp
-    Main.h
+    Simulation.cpp
+    Simulation.h
 
-    NeuralNetRenderer.cpp
-    NeuralNetRenderer.h
+    renderer/EnumRenderTypes.h
+    renderer/EnumRenderTypes.cpp
 
-    Neuron.cpp
-    Neuron.h
+    renderer/WorldRenderer.h
+    renderer/WorldRenderer.cpp
 
-    Object.cpp
-    Object.h
+    logic/WorldController.h
+    logic/WorldController.cpp
 
-    Organics.cpp
-    Organics.h
+    entity/Bot.cpp
+    entity/Bot.h
 
-    Rock.cpp
-    Rock.h
+    entity/Object.cpp
+    entity/Object.h
 
-    Apple.cpp
-    Apple.h
+    entity/Organics.cpp
+    entity/Organics.h
+
+    entity/Rock.cpp
+    entity/Rock.h
+
+    entity/Apple.cpp
+    entity/Apple.h
+
+    world/World.h 
+    world/World.cpp
+
+    world/EnumSeason.h
+    world/EnumSeason.cpp
 
     MyTypes.cpp
     MyTypes.h
@@ -53,6 +66,11 @@ set(SRC
 
     ObjectSaver.cpp
     ObjectSaver.h
+)
+
+file(GLOB_RECURSE SRC
+     "*.h"
+     "*.cpp"
 )
 
 find_package(OpenGL REQUIRED)
