@@ -972,6 +972,26 @@ void ApplicationGUIManager::Render()
 	if (renderType != EnumRenderTypes::noRender) {
 		Simulation::INSTANCE()->worldController->worldRenderer.draw(Simulation::INSTANCE()->worldController->gameWorld->params);
 
+
+		IObjectRenderer* worker;
+
+		switch (renderType) {
+
+		case EnumRenderTypes::energy: worker = new EnergyObjectRenderer(); break;
+
+		case EnumRenderTypes::natural: worker = new NaturalObjectRenderer(); break;
+
+		case EnumRenderTypes::predators: worker = new PredatorsObjectRenderer(); break;
+
+		case EnumRenderTypes::noRender:
+		default:
+			return;
+		}
+
+
+
+		ObjectRenderer::drawObjects(World::INSTANCE()->allCells, worker);
+
 		//Highlight selected object
 		HighlightSelection();
 

@@ -54,22 +54,22 @@ WorldController::WorldController() {
             threadGoMarker[i] = false;
 
 
-        for (int i = 0; i < NumThreads; i++) {
-            const uint xCoord = 0;
-            const uint yCoord = 0;
-            const uint areaWidth = (FieldCellsWidth / 8) * (i + 1);
-            const uint areaHeight = FieldCellsHeight;
-            threads[0] = new std::thread(&WorldController::ProcessPart_AlternativeMultipleThreads, this, xCoord, yCoord, areaWidth, areaHeight, i);
-        }
+        //for (int i = 0; i < NumThreads; i++) {
+        //    const uint xCoord = 0;
+        //    const uint yCoord = 0;
+        //    const uint areaWidth = (FieldCellsWidth / 8) * (i + 1);
+        //    const uint areaHeight = FieldCellsHeight;
+        //    threads[0] = new std::thread(&WorldController::ProcessPart_AlternativeMultipleThreads, this, xCoord, yCoord, areaWidth, areaHeight, i);
+        //}
 
-        //threads[0] = new std::thread(&Field::ProcessPart_MultipleThreads, this, 0,                         0,  FieldCellsWidth / 8,      FieldCellsHeight, 0);
-        //threads[1] = new std::thread(&Field::ProcessPart_MultipleThreads, this, FieldCellsWidth / 8,       0,  FieldCellsWidth / 4,      FieldCellsHeight, 1);
-        //threads[2] = new std::thread(&Field::ProcessPart_MultipleThreads, this, FieldCellsWidth / 4,       0, (FieldCellsWidth / 8) * 3, FieldCellsHeight, 2);
-        //threads[3] = new std::thread(&Field::ProcessPart_MultipleThreads, this, (FieldCellsWidth / 8) * 3, 0,  FieldCellsWidth / 2,      FieldCellsHeight, 3);
-        //threads[4] = new std::thread(&Field::ProcessPart_MultipleThreads, this, FieldCellsWidth / 2,       0, (FieldCellsWidth / 8) * 5, FieldCellsHeight, 4);
-        //threads[5] = new std::thread(&Field::ProcessPart_MultipleThreads, this, (FieldCellsWidth / 8) * 5, 0, (FieldCellsWidth / 4) * 3, FieldCellsHeight, 5);
-        //threads[6] = new std::thread(&Field::ProcessPart_MultipleThreads, this, (FieldCellsWidth / 4) * 3, 0, (FieldCellsWidth / 8) * 7, FieldCellsHeight, 6);
-        //threads[7] = new std::thread(&Field::ProcessPart_MultipleThreads, this, (FieldCellsWidth / 8) * 7, 0,  FieldCellsWidth,          FieldCellsHeight, 7);
+        threads[0] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, 0,                         0,  FieldCellsWidth / 8,      FieldCellsHeight, 0);
+        threads[1] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, FieldCellsWidth / 8,       0,  FieldCellsWidth / 4,      FieldCellsHeight, 1);
+        threads[2] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, FieldCellsWidth / 4,       0, (FieldCellsWidth / 8) * 3, FieldCellsHeight, 2);
+        threads[3] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, (FieldCellsWidth / 8) * 3, 0,  FieldCellsWidth / 2,      FieldCellsHeight, 3);
+        threads[4] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, FieldCellsWidth / 2,       0, (FieldCellsWidth / 8) * 5, FieldCellsHeight, 4);
+        threads[5] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, (FieldCellsWidth / 8) * 5, 0, (FieldCellsWidth / 4) * 3, FieldCellsHeight, 5);
+        threads[6] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, (FieldCellsWidth / 4) * 3, 0, (FieldCellsWidth / 8) * 7, FieldCellsHeight, 6);
+        threads[7] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, (FieldCellsWidth / 8) * 7, 0,  FieldCellsWidth,          FieldCellsHeight, 7);
     #endif
 
 }
