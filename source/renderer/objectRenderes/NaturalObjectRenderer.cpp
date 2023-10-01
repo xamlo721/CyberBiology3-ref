@@ -24,14 +24,7 @@ void NaturalObjectRenderer::draw(Object* gameObject) {
 
     switch (gameObject->type) {
 
-        case EnumObjectType::apple: {
-            SDL_Texture* image = TextureLoader::getAppleTexture()->image;
-
-            //Draw from texture
-            SDL_RenderCopy(renderer, image, &Object::image_rect, &object_rect);
-            break;
-        }
-        case EnumObjectType::bot: {
+        case EnumObjectType::Bot: {
             SDL_Rect object_rect = RenderUtils::CalcObjectRect(gameObject);
             SDL_Texture* sprite_body = TextureLoader::getBotTexture()->image;
 
@@ -41,20 +34,6 @@ void NaturalObjectRenderer::draw(Object* gameObject) {
 
             //Draw outlines
             SDL_RenderCopy(renderer, TextureLoader::getBotSprite()->sprite_head[((Bot*)gameObject)->direction], &Object::image_rect, &object_rect);
-            break;
-        }
-        case EnumObjectType::organic_waste: {
-            SDL_Texture* image = TextureLoader::getOrganicTexture()->image;
-
-            //Draw from texture
-            SDL_RenderCopy(renderer, image, &gameObject->image_rect, &object_rect);
-            break;
-        }
-        case EnumObjectType::rock: {
-
-            //Draw stone
-            SDL_SetRenderDrawColor(renderer, RockDrawColor);
-            SDL_RenderFillRect(renderer, &object_rect);
             break;
         }
 

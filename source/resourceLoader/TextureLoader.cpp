@@ -139,7 +139,7 @@ void TextureLoader::createBotSprite() {
         SDL_FreeSurface(surf);
     }
 
-    //Create bot 'body' image (white rectangle)
+    //Create Bot 'body' image (white rectangle)
 
     //Another surface
     surf = SDL_CreateRGBSurface(0, FieldCellSize, FieldCellSize, 32, R_CHANNEL, G_CHANNEL, B_CHANNEL, A_CHANNEL);
@@ -164,7 +164,7 @@ void TextureLoader::createOrganicTexture()
 {
     SDL_Surface* surf;
 
-    //Create bot 'body' image (white rectangle)
+    //Create Bot 'body' image (white rectangle)
 
     //Another surface
     surf = SDL_CreateRGBSurface(0, FieldCellSize, FieldCellSize, 32, R_CHANNEL, G_CHANNEL, B_CHANNEL, A_CHANNEL);

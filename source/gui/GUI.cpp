@@ -1,8 +1,6 @@
 
 #include "GUI.h"
 
-#include "../entity/Rock.h"
-
 #include "../Simulation.h"
 #include "../logic/SimulationTimer.h"
 #include "../renderer/ObjectRenderer.h"
@@ -497,7 +495,7 @@ void ApplicationGUIManager::DrawDangerousWindow()
 						if (o == NULL)
 							continue;
 
-						if (o->type == EnumObjectType::bot)
+						if (o->type == EnumObjectType::Bot)
 							Simulation::INSTANCE()->worldController->gameWorld->RemoveObject(cx, cy);
 					}
 				}
@@ -598,21 +596,6 @@ void ApplicationGUIManager::DrawAdaptationWindow()
 				ImGui::SliderInt("Mud level", &Simulation::INSTANCE()->worldController->gameWorld->params.mudLevel, 0, FieldCellsHeight);
 			}
 
-			ImGui::NewLine();
-
-			if (ImGui::CollapsingHeader("Organics"))
-			{
-				ImGui::SliderInt("Organics spawn rate", &Simulation::INSTANCE()->worldController->gameWorld->params.adaptation_organicSpawnRate, 0, 1000);
-			}
-
-			ImGui::NewLine();
-
-			if (ImGui::CollapsingHeader("Apples"))
-			{
-				ImGui::SliderInt("Apple energy", &Simulation::INSTANCE()->worldController->gameWorld->params.appleEnergy, 1, 200);
-
-				ImGui::Checkbox("Spawn apples", &Simulation::INSTANCE()->worldController->gameWorld->params.spawnApples);
-			}
 
 			ImGui::NewLine();
 
@@ -650,22 +633,6 @@ void ApplicationGUIManager::DrawChartWindow()
 
 				ImPlot::PlotLine("Bots", Simulation::INSTANCE()->chartData_bots, Simulation::INSTANCE()->chart_numValues - 1, 1.0f, 0.0f, ImPlotLineFlags_None);
 
-				//Apples number
-				if(Simulation::INSTANCE()->chartShow_apples)
-				{
-					ImPlot::SetNextLineStyle({ 0, 1, 0, 1 }, ChartLineThickness);
-
-					ImPlot::PlotLine("Apples", Simulation::INSTANCE()->chartData_apples, Simulation::INSTANCE()->chart_numValues - 1, 1.0f, 0.0f, ImPlotLineFlags_None);
-				}
-
-				//Organics number
-				if(Simulation::INSTANCE()->chartShow_organics)
-				{
-					ImPlot::SetNextLineStyle({ 0, 0, 1, 1 }, ChartLineThickness);
-
-					ImPlot::PlotLine("Organics", Simulation::INSTANCE()->chartData_organics, Simulation::INSTANCE()->chart_numValues - 1, 1.0f, 0.0f, ImPlotLineFlags_None);
-				}
-
 				ImPlot::EndPlot();
 			}
 
@@ -675,9 +642,6 @@ void ApplicationGUIManager::DrawChartWindow()
 
 			if (ImGui::Button("Clear", { 70.0f, 30.0f }))
 				Simulation::INSTANCE()->ClearChart();
-
-			ImGui::Checkbox("Apples", &Simulation::INSTANCE()->chartShow_apples);
-			ImGui::Checkbox("Organics", &Simulation::INSTANCE()->chartShow_organics);
 
 			ImGui::EndGroup();
 		}
@@ -838,7 +802,7 @@ void ApplicationGUIManager::MouseClick()
 			{
 				if (obj)
 				{
-					if (obj->type == EnumObjectType::bot)
+					if (obj->type == EnumObjectType::Bot)
 					{
 						Simulation::INSTANCE()->selectedObject = obj;
 					}
@@ -858,24 +822,6 @@ void ApplicationGUIManager::MouseClick()
 					{
 						if (Simulation::INSTANCE()->worldController->gameWorld->IsInBounds(fieldCoords.x + cx, fieldCoords.y + cy))
 							Simulation::INSTANCE()->worldController->gameWorld->RemoveObject(fieldCoords.x + cx, fieldCoords.y + cy);
-					}
-				}
-			}
-			else if (mouseFunc == EnumMouseFunction::mouse_place_rock)
-			{
-				for (int cx = -Simulation::INSTANCE()->brushSize; cx < Simulation::INSTANCE()->brushSize + 1; ++cx)
-				{
-					for (int cy = -Simulation::INSTANCE()->brushSize; cy < Simulation::INSTANCE()->brushSize + 1; ++cy)
-					{
-						if (Simulation::INSTANCE()->worldController->gameWorld->IsInBounds(fieldCoords.x + cx, fieldCoords.y + cy))
-						{
-							obj = Simulation::INSTANCE()->worldController->gameWorld->GetObjectLocalCoords(fieldCoords.x + cx, fieldCoords.y + cy);
-
-							if (!obj)
-							{
-								Simulation::INSTANCE()->worldController->gameWorld->AddObject(new Rock(fieldCoords.x + cx, fieldCoords.y + cy));
-							}
-						}
 					}
 				}
 			}
@@ -918,7 +864,7 @@ void ApplicationGUIManager::MouseClick()
 
 							if (obj)
 							{
-								if (obj->type == EnumObjectType::bot)
+								if (obj->type == EnumObjectType::Bot)
 								{
 									obj->Mutagen();
 								}

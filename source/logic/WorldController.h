@@ -41,10 +41,6 @@ class WorldController {
         WorldRenderer worldRenderer;
         ObjectRenderer objectRenderer;
 
-        //Apple spawn timer
-        uint spawnApplesInterval = 0;
-
-
         //threads
         abool threadGoMarker[NumThreads];
         std::thread* threads[NumThreads];
@@ -59,7 +55,6 @@ class WorldController {
 
         //Spawn group of random bots
         void SpawnControlGroup();
-        void SpawnApples();
 
         void PauseThreads();
         void UnpauseThreads();

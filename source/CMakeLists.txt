@@ -49,9 +49,6 @@ set(SRC
     entity/Rock.cpp
     entity/Rock.h
 
-    entity/Apple.cpp
-    entity/Apple.h
-
     world/World.h 
     world/World.cpp
 

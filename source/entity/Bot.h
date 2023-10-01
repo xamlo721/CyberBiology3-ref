@@ -9,7 +9,7 @@
 #include "../logic/EnumEnergySource.h"
 
 
-//Rotations array, contains where a bot would look with every
+//Rotations array, contains where a Bot would look with every
 //position of its head
 const Point Rotations[] =
 {
@@ -62,7 +62,7 @@ public:
     //Rotation, see Rotations[]
     uint direction=0;
 
-    //That is what a bot is looking at
+    //That is what a Bot is looking at
     Point lookAt;
     int lookAt_x, lookAt_y;
 
@@ -74,10 +74,10 @@ public:
     //Bot gets initial brain from his parent, it is his original genes
     BotNeuralNet initialBrain;
 
-    //if this is not 0, bot does nothing at his turn
+    //if this is not 0, Bot does nothing at his turn
     int stunned;
 
-    //How long a bot should wait before multiply
+    //How long a Bot should wait before multiply
     int fertilityDelay;
 
 
@@ -125,7 +125,7 @@ public:
 
     int adaptationCounter = 0;
 
-    //How many times bot used attack, move and PS commands
+    //How many times Bot used attack, move and PS commands
     uint numAttacks = 0;
     uint numMovesY = 0;
     uint numPSonLand = 0;
@@ -164,7 +164,7 @@ public:
     BotNeuralNet* GetActiveBrain();
     BotNeuralNet* GetInitialBrain();
 
-    //Take away bot energy, return true if 0 or below (bot dies)
+    //Take away Bot energy, return true if 0 or below (Bot dies)
     bool TakeEnergy(int val);
 
     /*Get neuron summary(info)
@@ -195,7 +195,7 @@ public:
     //Inherit from a parent
     Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate = false);
 
-    //New bot
+    //New Bot
     Bot(int X, int Y, uint Energy = MaxPossibleEnergyForABot);
 
 

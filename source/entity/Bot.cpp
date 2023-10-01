@@ -40,8 +40,7 @@ void Bot::RandomizeMarkers()
     nextMarker = 0;
 }
 
-Color Bot::GetRandomColor()
-{
+Color Bot::GetRandomColor() {
     Color toRet;
 
 #ifdef PresetRandomColors
@@ -149,27 +148,12 @@ BrainInput Bot::FillBrainInput()
             //Destination not empty
             switch (tmpDest->type)
             {
-            case EnumObjectType::bot:
+            case EnumObjectType::Bot:
                 //0.5 if someone is in that cell
                 input.vision = 1.0f;
 
                 //Calculate how close they are as relatives, based on mutation markers
                 input.vision += (1.0f - (FindKinship((Bot*)tmpDest) * 1.0f) / (NumberOfMutationMarkers * 1.0f));
-                break;
-
-            case EnumObjectType::rock:
-                //0.5 if cell is unpassable
-                input.vision = .5f;
-                break;
-
-            case EnumObjectType::organic_waste:
-                //-.5 if cell contains organics
-                input.vision = -.5f;
-                break;
-
-            case EnumObjectType::apple:
-                //-1.0 if cell contains an apple
-                input.vision = -1.0f;
                 break;
             }
         }
@@ -228,35 +212,16 @@ void Bot::Attack()
 
         if (obj)
         {
-            if (obj->type == EnumObjectType::bot)
+            if (obj->type == EnumObjectType::Bot)
             {
                 #ifdef BotCanEatBot
-                //Eat a bot
+                //Eat a Bot
                 GiveEnergy(obj->energy, EnumEnergySource::predation);
                 World::INSTANCE()->RemoveBot(lookAt_x, lookAt_y);
                 #endif
 
                 ++numAttacks;
             }
-            else if (obj->type == EnumObjectType::organic_waste)
-            {
-                //Eat organics
-                GiveEnergy(obj->energy, EnumEnergySource::organics);
-                World::INSTANCE()->RemoveObject(lookAt_x, lookAt_y);
-            }
-            else if (obj->type == EnumObjectType::apple)
-            {
-                //Eat apple
-                GiveEnergy(obj->energy, EnumEnergySource::organics);
-                World::INSTANCE()->RemoveObject(lookAt_x, lookAt_y);
-            }
-            #ifdef BotCanEatRock
-            else if (obj->type == rock)
-            {
-                //Eat rock, it gives no energy
-                RemoveObject(lookAt_x, lookAt_y);
-            }
-            #endif
         }
     }
 }
@@ -443,8 +408,8 @@ bool Bot::ArtificialSelectionWatcher_OnDivide()
 
 
 
-int Bot::tick()
-{
+int Bot::tick() {
+
     int ret = Object::tick();
 
     if (ret != 0)
@@ -694,7 +659,7 @@ void Bot::SetColor(Uint8 r, Uint8 g, Uint8 b)
 }
 
 
-Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, EnumObjectType::bot, false), initialBrain(&prototype->initialBrain) {
+Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, EnumObjectType::Bot, false), initialBrain(&prototype->initialBrain) {
     energy = Energy;
     stunned = StunAfterBirth;
     fertilityDelay = FertilityDelay;
@@ -733,7 +698,7 @@ Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, E
 }
 
 
-Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::bot, false) {
+Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::Bot, false) {
 
     RandomizeMarkers();
 
@@ -743,7 +708,7 @@ Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::bot, false) {
     energyFromPS = 0;
     energyFromPredation = 0;
 
-    //Randomize bot brain
+    //Randomize Bot brain
     initialBrain.Randomize();
     activeBrain.Clone(&initialBrain);
     activeBrain.Optimize();

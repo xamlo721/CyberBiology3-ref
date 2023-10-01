@@ -1,5 +1,4 @@
 #include "World.h"
-#include "../entity/Organics.h"
 
 int World::seed;
 
@@ -87,14 +86,14 @@ Point World::FindRandomNeighbourBot(int X, int Y)
             {
                 if (allCells[tx][Y + cy] != NULL)
                 {
-                    if (allCells[tx][Y + cy]->type == EnumObjectType::bot)
+                    if (allCells[tx][Y + cy]->type == EnumObjectType::Bot)
                         tmpArray[i++].Set(tx, Y + cy);
                 }
             }
         }
     }
 
-    //Get random bot from array
+    //Get random Bot from array
     if (i > 0)
     {
         return tmpArray[RandomVal(i)];
@@ -174,11 +173,6 @@ void World::RemoveBot(int X, int Y, int energyVal)
 {
     RemoveObject(X, Y);
 
-    if (RandomPercentX10(params.adaptation_organicSpawnRate))
-    {
-        if (energyVal > 0)
-            AddObject(new Organics(X, Y, energyVal));
-    }
 }
 
 void World::RepaintBot(Bot* b, Color newColor, int differs)
@@ -193,7 +187,7 @@ void World::RepaintBot(Bot* b, Color newColor, int differs)
 
             if (tmpObj)
             {
-                if (tmpObj->type == EnumObjectType::bot)
+                if (tmpObj->type == EnumObjectType::Bot)
                 {
                     if (((Bot*)tmpObj)->FindKinship(b) >= (NumberOfMutationMarkers - differs))
                     {

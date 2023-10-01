@@ -1,6 +1,4 @@
 #include "WorldController.h"
-#include "../entity/Apple.h"
-#include "../entity/Apple.h"
 #include "../entity/Object.h"
 
 //SINGLETON
@@ -83,7 +81,7 @@ void WorldController::jumpToFirstBot() {
             obj = gameWorld->allCells[X][Y];
 
             if (obj) {
-                if (obj->type == EnumObjectType::bot) {
+                if (obj->type == EnumObjectType::Bot) {
                     worldRenderer.renderX = X;
 
                     return;
@@ -135,7 +133,7 @@ void WorldController::ObjectTick(Object* tmpObj)
     if (t == 1)
     {
         //Object destroyed
-        if (tmpObj->type == EnumObjectType::bot)
+        if (tmpObj->type == EnumObjectType::Bot)
             gameWorld->RemoveBot(tmpObj->x, tmpObj->y, tmpObj->energy);
         else
             gameWorld->RemoveObject(tmpObj->x, tmpObj->y);
@@ -164,12 +162,8 @@ inline void WorldController::tick_single_thread()
             {
                 ++gameWorld->objectsTotal;
 
-                if (tmpObj->type == EnumObjectType::bot)
+                if (tmpObj->type == EnumObjectType::Bot)
                     ++gameWorld->botsTotal;
-                else if (tmpObj->type == EnumObjectType::apple)
-                    ++gameWorld->applesTotal;
-                else if (tmpObj->type == EnumObjectType::organic_waste)
-                    ++gameWorld->organicsTotal;
 
                 ObjectTick(tmpObj);
             }
@@ -291,15 +285,6 @@ void WorldController::tick(uint thisFrame)
 {
     Object::currentFrame = thisFrame;
 
-    if (gameWorld->params.spawnApples)
-    {
-        if (spawnApplesInterval++ == AppleSpawnInterval)
-        {
-            SpawnApples();
-
-            spawnApplesInterval = 0;
-        }
-    }
 
 #ifdef UseOneThread
     tick_single_thread();
@@ -307,32 +292,6 @@ void WorldController::tick(uint thisFrame)
     tick_multiple_threads();
 #endif
 }
-
-
-
-void WorldController::SpawnApples()
-{
-    Object* tmpObj;
-
-    for (uint ix = 0; ix < FieldCellsWidth; ++ix)
-    {
-        for (uint iy = 0; iy < (FieldCellsHeight - gameWorld->params.oceanLevel); ++iy)
-        {
-
-            tmpObj = gameWorld->allCells[ix][iy];
-
-            if (tmpObj == NULL)
-            {
-                //Take a chance to spawn an apple
-                if (RandomPercentX10(SpawnAppleInCellChance))
-                {
-                    gameWorld->AddObject(new Apple(ix, iy));
-                }
-            }
-        }
-    }
-}
-
 
 
 void WorldController::PauseThreads()
@@ -359,15 +318,11 @@ void WorldController::ProcessPart_AlternativeMultipleThreads(const uint X1, cons
 
         ++counters[index][0];
 
-        if (tmpObj->type == EnumObjectType::bot)
+        if (tmpObj->type == EnumObjectType::Bot)
             ++counters[index][1];
-        else if (tmpObj->type == EnumObjectType::apple)
-            ++counters[index][2];
-        else if (tmpObj->type == EnumObjectType::organic_waste)
-            ++counters[index][3];
 
         ObjectTick(tmpObj);
-        };
+    };
 
     for (;;) {
 
@@ -410,15 +365,11 @@ void WorldController::ProcessPart_MultipleThreads(const uint X1, const uint Y1, 
 
         ++counters[index][0];
 
-        if (tmpObj->type == EnumObjectType::bot)
+        if (tmpObj->type == EnumObjectType::Bot)
             ++counters[index][1];
-        else if (tmpObj->type == EnumObjectType::apple)
-            ++counters[index][2];
-        else if (tmpObj->type == EnumObjectType::organic_waste)
-            ++counters[index][3];
 
         ObjectTick(tmpObj);
-        };
+    };
 
     for (;;) {
         ThreadWait(index);

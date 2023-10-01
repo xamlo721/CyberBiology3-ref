@@ -6,7 +6,6 @@ class FieldDynamicParams {
 
         int oceanLevel;
         int mudLevel;
-        int appleEnergy;
 
         int adaptation_DeathChance_Winds;
         int adaptation_StepsNum_Winds;
@@ -18,10 +17,6 @@ class FieldDynamicParams {
         int adaptation_botShouldBeOnLandOnceToMultiply;
         int adaptation_botShouldDoPSOnLandOnceToMultiply;
         int adaptation_forceBotMovements;
-
-        int adaptation_organicSpawnRate;
-
-        bool spawnApples;
 
         int reserved[38];
 

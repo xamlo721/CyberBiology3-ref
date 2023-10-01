@@ -6,7 +6,6 @@
 void FieldDynamicParams::Reset() {
     oceanLevel = InitialOceanHeight;
     mudLevel = InitialMudLayerHeight;
-    appleEnergy = DefaultAppleEnergy;
 
     adaptation_DeathChance_Winds = 0;
     adaptation_StepsNum_Winds = 2;
@@ -18,8 +17,6 @@ void FieldDynamicParams::Reset() {
     adaptation_botShouldBeOnLandOnceToMultiply = 0;
     adaptation_botShouldDoPSOnLandOnceToMultiply = 0;
     adaptation_forceBotMovements = 0;
-
-    adaptation_organicSpawnRate = 0;
 
     memset(reserved, 0, sizeof(reserved));
 }

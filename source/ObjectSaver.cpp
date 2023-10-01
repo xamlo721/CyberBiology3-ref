@@ -2,9 +2,6 @@
 
 #include "ObjectSaver.h"
 
-#include "entity/Organics.h"
-#include "entity/Apple.h"
-#include "entity/Rock.h"
 #include "entity/Bot.h"
 #include "entity/EnumObjectType.h"
 
@@ -52,34 +49,10 @@ Object* ObjectSaver::LoadObjectFromFile(MyInputStream& file)
 
     uint objectType = file.ReadInt();
 
-    switch ((EnumObjectType::ObjectTypes)objectType)
-    {
-    case EnumObjectType::bot:
-        return LoadBotFromFile(file);
-
-    case EnumObjectType::rock:
-        toRet = new Rock(0, 0);
-
-        toRet->SetLifetime(file.ReadInt());
-
-        return toRet;
-
-    case EnumObjectType::apple:
-        toRet = new Apple(0, 0);
-
-        toRet->SetLifetime(file.ReadInt());
-        toRet->energy = file.ReadInt();
-
-        return toRet;
-
-    case EnumObjectType::organic_waste:
-        toRet = new Organics(0, 0, 0);
-
-        toRet->SetLifetime(file.ReadInt());
-        toRet->energy = file.ReadInt();
-
-        return toRet;
-    }
+    switch ((EnumObjectType::ObjectTypes)objectType) {
+        case EnumObjectType::Bot:
+            return LoadBotFromFile(file);
+    }   
 
     return NULL;
 }
@@ -192,7 +165,7 @@ bool ObjectSaver::SaveWorld(World* world, char* filename, int id, int ticknum)
                     WriteObjectToFile(file, tmpObj);
                 else
                 {
-                    file.WriteInt(EnumObjectType::abstract);
+                    file.WriteInt(EnumObjectType::Empty);
                 }
             }
         }
@@ -238,27 +211,9 @@ void ObjectSaver::WriteObjectToFile(MyOutStream& file, Object* obj)
 {
     switch (obj->type)
     {
-    case EnumObjectType::bot:
+    case EnumObjectType::Bot:
         WriteBotToFile(file, (Bot*)obj);
         break;
-
-    case EnumObjectType::rock:
-        file.WriteInt(EnumObjectType::rock);
-        file.WriteInt(obj->GetLifetime());
-        break;
-
-    case EnumObjectType::apple:
-        file.WriteInt(EnumObjectType::apple);
-        file.WriteInt(obj->GetLifetime());
-        file.WriteInt(obj->energy);
-        break;
-
-    case EnumObjectType::organic_waste:
-        file.WriteInt(EnumObjectType::organic_waste);
-        file.WriteInt(obj->GetLifetime());
-        file.WriteInt(obj->energy);
-        break;
-
     default:
         throw("TODO save object");
     }
@@ -270,12 +225,12 @@ void ObjectSaver::WriteObjectToFile(MyOutStream& file, Object* obj)
 
 File format:
     4b - magic number
-    4b - object type (bot = 1)
+    4b - object type (Bot = 1)
     4b - lifetime
     4b - uint dest layers
     4b - uint neurons in layer
     4b - sizeof (Neuron)
-    12b - bot color
+    12b - Bot color
     4b - num mutation markers
     4b - energy
     following all neurons from first to last layer by layer

@@ -116,8 +116,6 @@ void Simulation::ClearWorld()
 void Simulation::ClearChart()
 {
 	memset(chartData_bots, 0, sizeof(chartData_bots));
-	memset(chartData_organics, 0, sizeof(chartData_organics));
-	memset(chartData_apples, 0, sizeof(chartData_apples));
 
 	chart_numValues = 0;
 	chart_currentPosition = 0;
@@ -126,8 +124,6 @@ void Simulation::ClearChart()
 void Simulation::AddToChart(float newVal_bots, float newVal_apples, float newVal_organics)
 {
 	chartData_bots[chart_currentPosition] = newVal_bots;
-	chartData_apples[chart_currentPosition] = newVal_apples;
-	chartData_organics[chart_currentPosition] = newVal_organics;
 
 	if (chart_numValues < 250)
 	{

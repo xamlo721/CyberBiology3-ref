@@ -36,7 +36,7 @@
 
 
 //choose only 1 option------
-//#define UseOneThread
+//define UseOneThread
 //#define UseFourThreads
 #define UseEightThreads
 //--------------------------
@@ -81,8 +81,6 @@
 #define Keyboard_NoRender SDL_SCANCODE_KP_4
 
 #define Keyboard_SpawnRandoms SDL_SCANCODE_F1
-#define Keyboard_PlaceWall SDL_SCANCODE_F2
-#define Keyboard_DropOrganics SDL_SCANCODE_F3
 
 #define Keyboard_ShowSaveLoad_Window SDL_SCANCODE_Z
 #define Keyboard_ShowDangerous_Window SDL_SCANCODE_X
@@ -187,14 +185,7 @@
 #define StunAfterBirth 1	//How many turns a creature cannot act after his birth
 #define FertilityDelay 0	//Delay before next birth
 
-//#define BotCanEatRock
-#define BotCanEatBot
-
 #define OrganicWasteAlwaysFalls
-
-#define DefaultAppleEnergy 100
-#define AppleSpawnInterval 1
-#define SpawnAppleInCellChance 1
 
 //#define NoPhotosynthesis
 //#define ForbidMutations
@@ -279,7 +270,7 @@
 
 
 //-----------------------------------------------------------------
-//Neural net renderer (bot brain window)
+//Neural net renderer (Bot brain window)
 
 #define Render_PositiveWeightColor 185, 0, 0
 #define Render_NegativeWeightColor 0, 0, 185

@@ -13,21 +13,6 @@ void MyKeyBoard::CatchKeyboard(const Uint8* keyboard) {
 	else if (keyboard[Keyboard_SpawnRandoms]) {
 		Simulation::INSTANCE()->worldController->SpawnControlGroup();
 	}
-	else if (keyboard[Keyboard_PlaceWall])
-	{
-		repeat(FieldCellsHeight)
-			Simulation::INSTANCE()->worldController->gameWorld->AddObject(new Rock(0, i));
-	}
-	else if (keyboard[Keyboard_DropOrganics])
-	{
-		for (int X = 0; X < FieldCellsWidth; ++X)
-		{
-			for (int Y = 0; Y < 25 + RandomVal(20); ++Y)
-			{
-				Simulation::INSTANCE()->worldController->gameWorld->AddObject(new Organics(X, Y, MaxPossibleEnergyForABot / 2));
-			}
-		}
-	}
 	else if (keyboard[Keyboard_NextFrame])
 	{
 		if (!Simulation::INSTANCE()->simulate) {

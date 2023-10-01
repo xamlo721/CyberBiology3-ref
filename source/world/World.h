@@ -7,11 +7,25 @@
 #include "../Settings.h"
 
 #include "FieldDynamicParams.h"
+#include "../logic/ITickableObject.h"
+
+#include "Cell.h"
+
+#include <map>
+
 
 class World {
 
     private:
         static World* instance;
+        //Игровое поле
+        static Cell worldMap[FieldCellsWidth][FieldCellsHeight];
+
+        //Список объектов ожидающих обновления
+        static std::map<Uint32, ITickableObject *> entityes;
+
+        //Список обновленных объектов
+        static std::map<Uint32, ITickableObject *> tempEntityes;
 
     public:
         static World* INSTANCE() {
@@ -47,10 +61,10 @@ class World {
         void RemoveObject(int X, int Y);
         void RemoveAllObjects();
 
-        //Remove a bot (same as remove object but for a bot)
+        //Remove a Bot (same as remove object but for a Bot)
         void RemoveBot(int X, int Y, int energyVal = 0);
 
-        //Repaint bot
+        //Repaint Bot
         void RepaintBot(Bot* b, Color newColor, int differs = 1);
 
         //Move objects from one cell to another

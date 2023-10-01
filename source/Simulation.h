@@ -12,10 +12,6 @@
 
 #include "ObjectSaver.h"
 
-#include "entity/Apple.h"
-#include "entity/Organics.h"
-#include "entity/Rock.h"
-
 class Simulation {
 
 	private:
@@ -56,18 +52,10 @@ class Simulation {
 
 		//Chart (TODO)
 		float chartData_bots[ChartNumValues];
-		float chartData_apples[ChartNumValues];
-		float chartData_organics[ChartNumValues];
 		int chart_numValues = 0;
 		int chart_currentPosition = 0;
 
 		int timeBeforeNextDataToChart = AddToChartEvery;
-
-		bool chartShow_apples = false;
-		bool chartShow_organics = false;
-
-
-
 
 
 

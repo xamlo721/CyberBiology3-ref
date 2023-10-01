@@ -7,11 +7,7 @@
 void PredatorsObjectRenderer::draw(Object* gameObject) {
     switch (gameObject->type) {
 
-        case EnumObjectType::apple: {
-
-            break;
-        }
-        case EnumObjectType::bot: {
+        case EnumObjectType::Bot: {
             RenderUtils::CalcScreenX(gameObject);
             SDL_Rect object_rect = RenderUtils::CalcObjectRect(gameObject);
 
@@ -33,15 +29,6 @@ void PredatorsObjectRenderer::draw(Object* gameObject) {
 
             break;
         }
-        case EnumObjectType::organic_waste: {
-
-            break;
-        }
-        case EnumObjectType::rock: {
-
-            break;
-        }
-
         default: {
             draw(gameObject);
             break;
