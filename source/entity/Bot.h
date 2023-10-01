@@ -60,7 +60,7 @@ class Bot final: public Object , public ITickable {
     public:
 
         //Rotation, see Rotations[]
-        uint direction=0;
+        uint direction = 0;
 
         //That is what a Bot is looking at
         Point lookAt;
@@ -122,7 +122,7 @@ class Bot final: public Object , public ITickable {
         bool ArtificialSelectionWatcher_OnTick();
 
         //----------------------------------------------------------------------------------------------
-
+        BrainOutput tmpOut;
 
     public:
 

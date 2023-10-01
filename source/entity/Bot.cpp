@@ -256,34 +256,7 @@ void Bot::tick() {
 
     //Bot brain does its stuff
     tmpOut = think(input);
-
-    //Multiply first
-    if (tmpOut.divide > 0)
-    {
-
-    }
-
-    //Then attack
-    if (tmpOut.attack > 0)  {
-
-    } else {
-        //Rotate after
-        if (tmpOut.desired_rotation != (direction * .1f))
-        {
-
-        }
-
-        //Move
-        if (tmpOut.move > 0)
-        {
-
-        }
-        //Photosynthesis
-        else if (tmpOut.photosynthesis > 0) {
-
-        }
-    }
-
+    
     //return 0;
     return;
 }

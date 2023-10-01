@@ -10,7 +10,8 @@ void RotateAction::onActivate(Bot* object) {
         return;
     }
     
-    int direction = (tmpOut.desired_rotation * 10.0f);
+    //int direction = (tmpOut.desired_rotation * 10.0f);
+    int direction = (object->direction * 10.0f);
 
     direction = direction % 8;
 

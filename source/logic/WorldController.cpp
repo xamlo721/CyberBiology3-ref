@@ -1,6 +1,12 @@
 #include "WorldController.h"
 #include "../entity/Object.h"
 
+#include "../entity/actions/RotateAction.h"
+#include "../entity/actions/AttackAction.h"
+#include "../entity/actions/DivideAction.h"
+#include "../entity/actions/MoveAction.h"
+#include "../entity/actions/PhotosintesisAction.h"
+
 //SINGLETON
 WorldController* WorldController::instance = 0;
 
@@ -53,9 +59,11 @@ int WorldController::FindHowManyFreeCellsAround(int X, int Y)
 
 
 
-void WorldController::ObjectTick(Object* tmpObj)
-{
-     ((Bot*)tmpObj)->tick();
+void WorldController::ObjectTick(Object* tmpObj) {
+    
+    //TODO: Lock 3x3 
+
+    //TODO: remove dead object
 
         //Object destroyed
         //if (tmpObj->type == EnumObjectType::Bot)
@@ -64,6 +72,49 @@ void WorldController::ObjectTick(Object* tmpObj)
         //    gameWorld->RemoveObject(tmpObj->x, tmpObj->y);
 
         //return;
+
+     ((Bot*)tmpObj)->tick();
+     BrainOutput actions = ((Bot*)tmpObj)->tmpOut;
+
+
+     //TODO: Сделать правила для вызова Actions и перевести их на автомат
+
+
+     //Multiply first
+     if (actions.divide > 0) {
+         //FIXME: Этот дурдом с созданием объектов решается статическим списком Action в классе бота
+         DivideAction action;
+         action.onActivate(((Bot*)tmpObj));
+
+     }
+
+     //Then attack
+     if (actions.attack > 0) {
+         AttackAction action;
+         action.onActivate(((Bot*)tmpObj));
+
+     } else {
+
+         //Rotate after
+         if (actions.desired_rotation != (((Bot*)tmpObj)->direction * .1f)) {
+             RotateAction action;
+             action.onActivate(((Bot*)tmpObj));
+         }
+
+         //Move
+         if (actions.move > 0) {
+             MoveAction action;
+             action.onActivate(((Bot*)tmpObj));
+         }
+         //Photosynthesis
+         else if (actions.photosynthesis > 0) {
+             PhotosintesisAction action;
+             action.onActivate(((Bot*)tmpObj));
+         }
+
+     }
+
+
 }
 
 //tick function for single threaded build

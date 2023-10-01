@@ -5,7 +5,7 @@
 void PhotosintesisAction::onActivate(Bot* object) {
 
     //Above water
-    if (!World::INSTANCE()->IsInWater(y)) {
+    if (!World::INSTANCE()->IsInWater(object->y)) {
 
         int toGive;
 
@@ -40,7 +40,7 @@ void PhotosintesisAction::onActivate(Bot* object) {
 
         #ifndef NoPhotosyntesisInOcean
 
-            if (World::INSTANCE()->IsInMud(y))
+            if (World::INSTANCE()->IsInMud(object->y))
             {
                 if (RandomPercentX10(World::INSTANCE()->params.adaptation_PSInMudBlock))
                     return;

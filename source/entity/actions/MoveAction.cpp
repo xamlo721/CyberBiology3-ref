@@ -10,7 +10,7 @@ void MoveAction::onActivate(Bot* object) {
         return;
     }
     //Place object in a new place
-    int tmpY = y;
+    int tmpY = object->y;
 
     if (World::INSTANCE()->MoveObject(object, object->lookAt_x, object->lookAt_y) == 0)
     {
