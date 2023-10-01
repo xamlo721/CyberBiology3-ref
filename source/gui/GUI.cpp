@@ -289,7 +289,6 @@ void ApplicationGUIManager::DrawMouseFunctionWindow()
 		ImGui::SameLine();
 		ImGui::RadioButton("Remove", (int*)&mouseFunc, 1);
 
-		ImGui::RadioButton("Place rock", (int*)&mouseFunc, 2);
 		ImGui::SameLine();
 		ImGui::RadioButton("From file", (int*)&mouseFunc, 3);
 

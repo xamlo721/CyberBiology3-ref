@@ -2,7 +2,6 @@
 
 #include "../SDL.h"
 #include "../resources/Texture.h"
-#include "../resources/SpriteBotHead.h"
 
 class IRenderableObject {
 

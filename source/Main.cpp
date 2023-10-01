@@ -38,9 +38,7 @@ int main(int argc, char* argv[]) {}
 
 	InitImGUI();
 
-	TextureLoader::createAppleTexture();
 	TextureLoader::createBotSprite();
-	TextureLoader::createOrganicTexture();
 
 	//Main loop	
 	SDL_Event e;

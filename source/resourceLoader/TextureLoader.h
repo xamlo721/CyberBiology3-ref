@@ -2,7 +2,6 @@
 //#include <map>
 
 #include "../resources/Texture.h"
-#include "../resources/SpriteBotHead.h"
 
 class TextureLoader {
 
@@ -14,10 +13,7 @@ class TextureLoader {
 		static const Uint32 A_CHANNEL = 0x000000FF;
 
 		// остыль
-		static MyTexture* appleTexture;
 		static MyTexture* botTexture;
-		static SpriteBotHead* botSprite;
-		static MyTexture* organicTexture;
 
 	public:
 		//пока не пойму почему строки тут не работают, будет список статический
@@ -25,15 +21,10 @@ class TextureLoader {
 		//static std::map<std::string, SpriteBotHead *> botHeads;
 
 
-		static MyTexture* getAppleTexture();
 		static MyTexture* getBotTexture();
-		static SpriteBotHead* getBotSprite();
-		static MyTexture* getOrganicTexture();
 
 
-		static void createAppleTexture();
 		static void createBotSprite();
-		static void createOrganicTexture();
 
 
 		static void deleteAllImages();

@@ -20,8 +20,6 @@ void EnergyObjectRenderer::draw(Object* gameObject) {
             SDL_SetTextureColorMod(sprite_body, 255, (1.0f - ((((Bot*)gameObject)->energy * 1.0f) / (MaxPossibleEnergyForABot * 1.0f))) * 255.0f, 0);
             SDL_RenderCopy(renderer, sprite_body, &Object::image_rect, &object_rect);
 
-            //Draw outlines
-            SDL_RenderCopy(renderer, TextureLoader::getBotSprite()->sprite_head[((Bot*)gameObject)->direction], &Object::image_rect, &object_rect);
             break;
         }
 

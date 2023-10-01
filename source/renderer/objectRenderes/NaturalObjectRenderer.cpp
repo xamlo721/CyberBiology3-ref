@@ -32,8 +32,6 @@ void NaturalObjectRenderer::draw(Object* gameObject) {
             SDL_SetTextureColorMod(sprite_body, c.r, c.g, c.b);
             SDL_RenderCopy(renderer, sprite_body, &gameObject->image_rect, &object_rect);
 
-            //Draw outlines
-            SDL_RenderCopy(renderer, TextureLoader::getBotSprite()->sprite_head[((Bot*)gameObject)->direction], &Object::image_rect, &object_rect);
             break;
         }
 
