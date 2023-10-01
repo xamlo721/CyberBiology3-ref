@@ -178,20 +178,6 @@ void ApplicationGUIManager::DrawSelectionWindow()
 				ImGui::Text("lifetime: %i / %i", Simulation::INSTANCE()->selectedObject->GetLifetime(), MaxBotLifetime);
 				ImGui::Text("energy: %i (PS: %i, predation: %i)", Simulation::INSTANCE()->selectedObject->energy, ((Bot*)Simulation::INSTANCE()->selectedObject)->GetEnergyFromPS(), ((Bot*)Simulation::INSTANCE()->selectedObject)->GetEnergyFromKills());
 
-				//Mutation markers
-				int m[NumberOfMutationMarkers];
-				memcpy(m, ((Bot*)Simulation::INSTANCE()->selectedObject)->GetMarkers(), sizeof(m));
-				ImGui::Text("markers: {");
-
-				repeat(NumberOfMutationMarkers)
-				{
-					ImGui::SameLine();
-					ImGui::Text("%i", m[i]);
-				}
-
-				ImGui::SameLine();
-				ImGui::Text("}");
-
 				//Color
 				Uint8 c[3];
 
@@ -850,27 +836,6 @@ void ApplicationGUIManager::MouseClick()
 						}
 					}
 				}				
-			}
-			else if (mouseFunc == EnumMouseFunction::mouse_force_mutation)
-			{
-				for (int cx = -Simulation::INSTANCE()->brushSize; cx < Simulation::INSTANCE()->brushSize + 1; ++cx)
-				{
-					for (int cy = -Simulation::INSTANCE()->brushSize; cy < Simulation::INSTANCE()->brushSize + 1; ++cy)
-					{
-						if (Simulation::INSTANCE()->worldController->gameWorld->IsInBounds(fieldCoords.x + cx, fieldCoords.y + cy))
-						{
-							Bot* obj = (Bot*)Simulation::INSTANCE()->worldController->gameWorld->GetObjectLocalCoords(fieldCoords.x + cx, fieldCoords.y + cy);
-
-							if (obj)
-							{
-								if (obj->type == EnumObjectType::Bot)
-								{
-									obj->Mutagen();
-								}
-							}
-						}
-					}
-				}
 			}
 		}
 	}

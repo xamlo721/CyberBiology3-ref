@@ -7,6 +7,7 @@
 #include "../logic/BotNeuralNet.h"
 
 #include "../logic/EnumEnergySource.h"
+#include "../logic/ITickable.h"
 
 
 //Rotations array, contains where a Bot would look with every
@@ -54,157 +55,148 @@ const Uint8 presetColors[][4] =
 
 
 
-class Bot final:public Object
+class Bot final: public Object
+    , public ITickable 
 {
 
-public:
+    public:
 
-    //Rotation, see Rotations[]
-    uint direction=0;
+        //Rotation, see Rotations[]
+        uint direction=0;
 
-    //That is what a Bot is looking at
-    Point lookAt;
-    int lookAt_x, lookAt_y;
+        //That is what a Bot is looking at
+        Point lookAt;
 
-    void CalculateLookAt();
+        int lookAt_x, lookAt_y;
 
-
-    //Active brain - one that is used during simulation, may be changed or optimized
-    BotNeuralNet activeBrain;
-    //Bot gets initial brain from his parent, it is his original genes
-    BotNeuralNet initialBrain;
-
-    //if this is not 0, Bot does nothing at his turn
-    int stunned;
-
-    //How long a Bot should wait before multiply
-    int fertilityDelay;
+        void CalculateLookAt();
 
 
-    //Energy acquired from different sources
-    int energyFromPS = 0;
-    int energyFromPredation = 0;
-    int energyFromOrganics = 0;
+        //Active brain - one that is used during simulation, may be changed or optimized
+        BotNeuralNet activeBrain;
+        //Bot gets initial brain from his parent, it is his original genes
+        BotNeuralNet initialBrain;
 
-    //Mutation markers used to decide how close two bots are to each other as relatives
-    int mutationMarkers[NumberOfMutationMarkers];
-    uint nextMarker;
+        //if this is not 0, Bot does nothing at his turn
+        int stunned;
 
-    void ChangeMutationMarker();
-
-    void RandomizeMarkers();
-    void RandomizeColor();
-    void RandomDirection();
-
-    //Severe mutation function - Experimental
-    void TotalMutation();
-
-    //Shift color a little (-10 to +10)
-    void ChangeColor(const int str = 10);
-
-    //Experimental
-    void SlightlyMutate();
-
-    void Mutate();
-
-    //Create brain input data
-    BrainInput FillBrainInput();
-
-    void Multiply(int numChildren);
-    void Attack();
-    void Photosynthesis();
+        //How long a Bot should wait before multiply
+        int fertilityDelay;
 
 
-    //----------------------------------------------------------------------------------------------
-    //These functions are used for experiments such as adaptation,
-    //you are supposed to call them in tick() function, or do not use
+        //Energy acquired from different sources
+        int energyFromPS = 0;
+        int energyFromPredation = 0;
+        int energyFromOrganics = 0;
 
-    int adaptation_numTicks = 0;
-    int adaptation_numRightSteps = 0;
-    int addaptation_lastX;
+        //Mutation markers used to decide how close two bots are to each other as relatives
+        int mutationMarkers[NumberOfMutationMarkers];
+        uint nextMarker;
 
-    int adaptationCounter = 0;
+        void RandomizeMarkers();
+        void RandomizeColor();
+        void RandomDirection();
 
-    //How many times Bot used attack, move and PS commands
-    uint numAttacks = 0;
-    uint numMovesY = 0;
-    uint numPSonLand = 0;
+        //Shift color a little (-10 to +10)
+        void ChangeColor(const int str = 10);
 
-    //Bot visited land
-    bool wasOnLand = false;
+        //Create brain input data
+        BrainInput FillBrainInput();
 
-    bool ArtificialSelectionWatcher_OnTick();
-    bool ArtificialSelectionWatcher_OnDivide();
-
-    //----------------------------------------------------------------------------------------------
-
-
-public:
-
-    //Experimental
-    void Mutagen();
-
-    //Use neural network (feed forward)
-    BrainOutput think(BrainInput input);
-
-    //Bot tick function, it should always call parents tick function first
-    int tick() override;
-
-    void Rotate(int dir = 1);
+        void Multiply(int numChildren);
+        void Attack();
+        void Photosynthesis();
 
 
-    void GiveEnergy(int num, EnumEnergySource::EnergySource src = EnumEnergySource::unknown);
+        //----------------------------------------------------------------------------------------------
+        //These functions are used for experiments such as adaptation,
+        //you are supposed to call them in tick() function, or do not use
 
-    //Return current energy amount from different sources
-    int GetEnergyFromPS();
-    int GetEnergyFromKills();
+        int adaptation_numTicks = 0;
+        int adaptation_numRightSteps = 0;
+        int addaptation_lastX;
 
-    int* GetMarkers();
+        int adaptationCounter = 0;
 
-    BotNeuralNet* GetActiveBrain();
-    BotNeuralNet* GetInitialBrain();
+        //How many times Bot used attack, move and PS commands
+        uint numAttacks = 0;
+        uint numMovesY = 0;
+        uint numPSonLand = 0;
 
-    //Take away Bot energy, return true if 0 or below (Bot dies)
-    bool TakeEnergy(int val);
+        //Bot visited land
+        bool wasOnLand = false;
 
-    /*Get neuron summary(info)
-    Format: (all integers)
-    -simple neurons
-    -radial basis neurons
-    -random neurons
-    -memory neurons (if any)
-    -total connections
-    -dead end neurons
-    -total neurons
-    */
-    struct summary_return
-    {
-        int simple, radialBasis, random, memory, connections, deadend, neurons;
-    };
+        bool ArtificialSelectionWatcher_OnTick();
+        bool ArtificialSelectionWatcher_OnDivide();
 
-    summary_return GetNeuronSummary();
-
-    /*Find out how close these two are as relatives,
-    returns number of matching mutation markers*/
-    int FindKinship(Bot* stranger);
-
-    void SetColor(Color);
-    void SetColor(Uint8, Uint8, Uint8);
+        //----------------------------------------------------------------------------------------------
 
 
-    //Inherit from a parent
-    Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate = false);
+    public:
 
-    //New Bot
-    Bot(int X, int Y, uint Energy = MaxPossibleEnergyForABot);
+        /*Get neuron summary(info)
+        Format: (all integers)
+        -simple neurons
+        -radial basis neurons
+        -random neurons
+        -memory neurons (if any)
+        -total connections
+        -dead end neurons
+        -total neurons
+        */
+        struct summary_return
+        {
+            int simple, radialBasis, random, memory, connections, deadend, neurons;
+        };
 
 
 
-    static Color GetRandomColor();
+        //Inherit from a parent
+        Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate = false);
+
+        //New Bot
+        Bot(int X, int Y, uint Energy = MaxPossibleEnergyForABot);
+
+
+        //Use neural network (feed forward)
+        BrainOutput think(BrainInput input);
+
+        //Bot tick function, it should always call parents tick function first
+        virtual void tick() 
+            //override
+            ; //ITickable
+
+        void Rotate(int dir = 1);
+
+
+        void GiveEnergy(int num, EnumEnergySource::EnergySource src = EnumEnergySource::unknown);
+
+        //Return current energy amount from different sources
+        int GetEnergyFromPS();
+        int GetEnergyFromKills();
+
+        int* GetMarkers();
+
+        BotNeuralNet* GetActiveBrain();
+        BotNeuralNet* GetInitialBrain();
+
+        //Take away Bot energy, return true if 0 or below (Bot dies)
+        bool TakeEnergy(int val);
+
+        summary_return GetNeuronSummary();
+
+        /*Find out how close these two are as relatives,
+        returns number of matching mutation markers*/
+        int FindKinship(Bot* stranger);
+
+        void SetColor(Color);
+        void SetColor(Uint8, Uint8, Uint8);
+
+        static Color GetRandomColor();
 
 
 
-private:
+    private:
 
 
 

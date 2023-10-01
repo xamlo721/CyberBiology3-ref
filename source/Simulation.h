@@ -60,7 +60,7 @@ class Simulation {
 
 
 		void ClearChart();
-		void AddToChart(float, float, float);
+		void AddToChart(float);
 
 		//Bot selection
 		Object* selectedObject;

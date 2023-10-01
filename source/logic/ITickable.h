@@ -2,7 +2,7 @@
 
 
 
-class ITickableObject {
+class ITickable {
 
 	public:
 

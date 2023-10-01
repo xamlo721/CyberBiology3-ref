@@ -16,20 +16,6 @@ void Bot::CalculateLookAt()
     lookAt_y = lookAt.y;
 }
 
-void Bot::ChangeMutationMarker()
-{
-    mutationMarkers[nextMarker++] = rand();
-
-    if (nextMarker >= NumberOfMutationMarkers)
-    {
-        nextMarker = 0;
-
-        #ifdef RandomColorEveryNewMarkersSet
-        RandomizeColor();
-        #endif
-    }
-}
-
 
 void Bot::RandomizeMarkers()
 {
@@ -42,89 +28,24 @@ void Bot::RandomizeMarkers()
 
 Color Bot::GetRandomColor() {
     Color toRet;
-
-#ifdef PresetRandomColors
-    uint i = RandomVal(sizeof(presetColors) / (3 * sizeof(Uint8)));
-
-    toRet.r = presetColors[i][0];
-    toRet.g = presetColors[i][1];
-    toRet.b = presetColors[i][2];
-#else
     toRet.SetRandom();
-#endif
-
     return toRet;
 }
 
-void Bot::RandomizeColor()
-{
+void Bot::RandomizeColor() {
     color = GetRandomColor();
 }
 
-void Bot::RandomDirection()
-{
+void Bot::RandomDirection() {
     direction = RandomVal(8);
 }
 
-
-void Bot::TotalMutation()
-{
-    RandomizeMarkers();
-
-    repeat(3)
-        ChangeMutationMarker();
-
-    activeBrain.MutateHarsh();
-
-    RandomizeColor();
-}
-
-
-void Bot::ChangeColor(const int str)
-{
+void Bot::ChangeColor(const int str) {
     color.RandomChange(str);
 }
 
+BrainInput Bot::FillBrainInput() {
 
-void Bot::SlightlyMutate()
-{
-    activeBrain.MutateSlightly();
-
-    #ifdef ChangeColorSlightly
-    ChangeColor(BotColorChangeStrength);
-    #endif
-}
-
-
-
-void Bot::Mutate()
-{
-    ChangeMutationMarker();
-
-    //Mutate brain
-    for (int i = 0; i < (1 + RandomVal(MutateNeuronsMaximum + 1)); ++i)
-        initialBrain.Mutate();
-
-    /*
-    for (int s = 0; s < (1 + RandomVal(MutateNeuronsSlightlyMaximum + 1)); ++s)
-        brain.MutateSlightly();
-    */
-
-    //Change color
-    #ifdef ChangeColorSlightly
-    ChangeColor(20);
-    #endif
-
-    /*if (RandomPercentX10(RandomColorChancePercentX100))
-    {
-        RandomizeColor();
-    }*/
-
-}
-
-
-BrainInput Bot::FillBrainInput()
-{
     BrainInput input;
 
     //If destination is out of bounds
@@ -135,7 +56,7 @@ BrainInput Bot::FillBrainInput()
     }
     else
     {
-        Object* tmpDest = (*pCells)[lookAt_x][lookAt_y];
+        Object* tmpDest = World::INSTANCE()->allCells[lookAt_x][lookAt_y];
 
         //Destination cell is empty
         if (!tmpDest)
@@ -208,7 +129,7 @@ void Bot::Attack()
     if (World::INSTANCE()->IsInBounds(lookAt_x, lookAt_y))
     {
         //If there is an object
-        Object* obj = (*pCells)[lookAt_x][lookAt_y];
+        Object* obj = World::INSTANCE()->allCells[lookAt_x][lookAt_y];
 
         if (obj)
         {
@@ -280,18 +201,10 @@ void Bot::Photosynthesis()
     }
 }
 
-void Bot::Mutagen()
-{
-    if (RandomPercent(10))
-        Mutate();
-}
+BrainOutput Bot::think(BrainInput input) {
 
-
-BrainOutput Bot::think(BrainInput input)
-{
     //Stunned means the creature can not act
-    if (stunned)
-    {
+    if (stunned) {
         --stunned;
 
         return BrainOutput::GetEmptyBrain();
@@ -408,20 +321,19 @@ bool Bot::ArtificialSelectionWatcher_OnDivide()
 
 
 
-int Bot::tick() {
+void Bot::tick() {
 
-    int ret = Object::tick();
-
-    if (ret != 0)
-        return ret;
+    ++lifetime;
 
     energy -= EveryTickEnergyPenalty;
 
     if (ArtificialSelectionWatcher_OnTick())
-        return 1;
+        //return 1;
+        return;
 
     if (((energy) <= 0) || (lifetime >= MaxBotLifetime))
-        return 1;
+        //return 1;
+        return;
 
     BrainOutput tmpOut;
 
@@ -441,39 +353,40 @@ int Bot::tick() {
     {
         Multiply(tmpOut.divide);
 
-        if (energy <= 0)
-            return 1;
+        if (energy <= 0) {
+            //return 1;
+            return;
+        }
     }
 
     //Then attack
-    if (tmpOut.attack > 0)
-    {
+    if (tmpOut.attack > 0)  {
         //If dies of low energy
-        if (TakeEnergy(AttackCost))
-            return 1;
-        else
-        {
+        if (TakeEnergy(AttackCost)) {
+            //return 1;
+            return;
+        } else {
             Attack();
         }
-    }
-    else
-    {
+    } else {
         //Rotate after
         if (tmpOut.desired_rotation != (direction * .1f))
         {
             //If dies of low energy
-            if (TakeEnergy(RotateCost))
-                return 1;
-
+            if (TakeEnergy(RotateCost)) {
+                //return 1;
+                return;
+            }
             Rotate(int(tmpOut.desired_rotation * 10.0f));
         }
 
         //Move
         if (tmpOut.move > 0)
         {
-            if (TakeEnergy(MoveCost))
-                return 1;
-
+            if (TakeEnergy(MoveCost)) {
+                //return 1;
+                return;
+            }         
             //Place object in a new place
             int tmpY = y;
 
@@ -485,17 +398,13 @@ int Bot::tick() {
 
         }
         //Photosynthesis
-        else if (tmpOut.photosynthesis > 0)
-        {
-            #ifdef NoPhotosynthesis
-            return 0;
-            #endif
-
+        else if (tmpOut.photosynthesis > 0) {
             Photosynthesis();
         }
     }
 
-    return 0;
+    //return 0;
+    return;
 }
 
 
@@ -659,7 +568,7 @@ void Bot::SetColor(Uint8 r, Uint8 g, Uint8 b)
 }
 
 
-Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, EnumObjectType::Bot, false), initialBrain(&prototype->initialBrain) {
+Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, EnumObjectType::Bot), initialBrain(&prototype->initialBrain) {
     energy = Energy;
     stunned = StunAfterBirth;
     fertilityDelay = FertilityDelay;
@@ -675,21 +584,6 @@ Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, E
     //Random direction
     RandomDirection();
 
-    //Now mutate
-    #ifndef ForbidMutations
-    if (mutate)
-    {
-        #ifdef UseTotalMutation
-        if (RandomPercentX10(TotalMutationChancePercentX10))
-            TotalMutation();
-        else
-        #endif
-        {
-            Mutate();
-        }
-    }
-    #endif
-
     //Create active brain
     activeBrain.Clone(&initialBrain);
     activeBrain.Optimize();
@@ -698,7 +592,7 @@ Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, E
 }
 
 
-Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::Bot, false) {
+Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::Bot) {
 
     RandomizeMarkers();
 
@@ -712,9 +606,6 @@ Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::Bot, false) {
     initialBrain.Randomize();
     activeBrain.Clone(&initialBrain);
     activeBrain.Optimize();
-
-    //Set brain to dummy brain
-    //brain.SetDummy();
 
     //Random color
     RandomizeColor();

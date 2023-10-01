@@ -23,7 +23,7 @@ World::World() {
         AddObject(tmpBot);
     #endif
 
-        Object::SetPointers((Object***)allCells);
+        //Object::SetPointers((Object***)allCells);
 
 }
 
@@ -233,14 +233,6 @@ uint World::GetNumObjects() {
 
 uint World::GetNumBots() {
     return botsTotal;
-}
-
-uint World::GetNumApples() {
-    return applesTotal;
-}
-
-uint World::GetNumOrganics() {
-    return organicsTotal;
 }
 
 

@@ -66,8 +66,7 @@ void Simulation::MakeStep()
 		//Add data to chart
 		if (--timeBeforeNextDataToChart == 0)
 		{
-			AddToChart(worldController->gameWorld->GetNumBots() * 1.0f,
-				worldController->gameWorld->GetNumApples() * 1.0f, worldController->gameWorld->GetNumOrganics() * 1.0f);
+			AddToChart(worldController->gameWorld->GetNumBots() * 1.0f);
 
 			timeBeforeNextDataToChart = AddToChartEvery;
 		}
@@ -121,7 +120,7 @@ void Simulation::ClearChart()
 	chart_currentPosition = 0;
 }
 
-void Simulation::AddToChart(float newVal_bots, float newVal_apples, float newVal_organics)
+void Simulation::AddToChart(float newVal_bots)
 {
 	chartData_bots[chart_currentPosition] = newVal_bots;
 

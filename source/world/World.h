@@ -7,7 +7,7 @@
 #include "../Settings.h"
 
 #include "FieldDynamicParams.h"
-#include "../logic/ITickableObject.h"
+#include "../logic/ITickable.h"
 
 #include "Cell.h"
 
@@ -18,14 +18,17 @@ class World {
 
     private:
         static World* instance;
+
         //Игровое поле
         static Cell worldMap[FieldCellsWidth][FieldCellsHeight];
+        //То же самое игровое поле, только с объектами на нём
+        static ITickable * worldEntityMap[FieldCellsWidth][FieldCellsHeight];
 
         //Список объектов ожидающих обновления
-        static std::map<Uint32, ITickableObject *> entityes;
+        static std::map<Uint32, ITickable *> entityes;
 
         //Список обновленных объектов
-        static std::map<Uint32, ITickableObject *> tempEntityes;
+        static std::map<Uint32, ITickable *> tempEntityes;
 
     public:
         static World* INSTANCE() {
@@ -43,8 +46,6 @@ class World {
         //Needed to calculate number of active objects and bots (calculated on every frame)
         uint objectsTotal = 0;
         uint botsTotal = 0;
-        uint applesTotal = 0;
-        uint organicsTotal = 0;
 
         int photosynthesisReward = FoodbaseInitial;
 
@@ -92,8 +93,6 @@ class World {
         //How many objects on field, prev. frame
         uint GetNumObjects();
         uint GetNumBots();
-        uint GetNumApples();
-        uint GetNumOrganics();
 
         //This function is needed to tile world horizontally (change X = -1 to X = FieldCellsWidth etc.)
         int ValidateX(int X);

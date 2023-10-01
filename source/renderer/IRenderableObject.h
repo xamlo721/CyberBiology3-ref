@@ -1,14 +1,10 @@
 #pragma once
 
 #include "../SDL.h"
-#include "../resources/Texture.h"
 
 class IRenderableObject {
 
-	protected:
-
-
-	public:
+	public: //protected:
 		//MyTexture rectangle
 		static const Rect image_rect;
 

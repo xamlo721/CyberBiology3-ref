@@ -12,14 +12,7 @@ class Object;
 
 //Don't touch
 #define NumThreads 1
-#ifdef UseFourThreads
-#undef NumThreads
-#define NumThreads 4
-#endif
-#ifdef UseEightThreads
-#undef NumThreads
-#define NumThreads 8
-#endif
+
 
 
 class WorldController {
@@ -75,16 +68,13 @@ class WorldController {
         void StartThreads();
 
         //Wait for all threads to finish their calculations
-        void WaitForThreads();
+        void waitAllThreads();
 
         //Multithreaded tick function
         inline void tick_multiple_threads();
 
         //Wait for a signal 
         inline void ThreadWait(const uint index);
-
-        void jumpToFirstBot();
-
 
         //Tick function
         void tick(uint thisFrame);

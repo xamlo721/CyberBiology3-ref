@@ -55,10 +55,7 @@ void MyKeyBoard::CatchKeyboard(const Uint8* keyboard) {
 	{
 		Simulation::INSTANCE()->worldController->worldRenderer.shiftRenderPoint(-MoveCameraJump);
 	}
-	else if (keyboard[Keyboard_Jump_To_First_bot])
-	{
-		Simulation::INSTANCE()->worldController->jumpToFirstBot();
-	}
+
 	//Additional windows hotkeys
 	else if (keyboard[Keyboard_ShowSaveLoad_Window])
 	{

@@ -9,8 +9,7 @@ class EnumMouseFunction {
 		{
 			mouse_select,
 			mouse_remove,
-			mouse_from_file,
-			mouse_force_mutation
+			mouse_from_file
 		};
 
 };

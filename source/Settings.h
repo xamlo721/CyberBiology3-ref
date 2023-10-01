@@ -91,7 +91,6 @@
 #define Keyboard_Reset_RenderX SDL_SCANCODE_HOME
 #define Keyboard_Jump_Up_RenderX SDL_SCANCODE_PAGEUP
 #define Keyboard_Jump_Down_RenderX SDL_SCANCODE_PAGEDOWN
-#define Keyboard_Jump_To_First_bot SDL_SCANCODE_END
 
 #define MoveCameraSpeed 1
 #define MoveCameraFastSpeed 6
@@ -186,9 +185,6 @@
 #define FertilityDelay 0	//Delay before next birth
 
 #define OrganicWasteAlwaysFalls
-
-//#define NoPhotosynthesis
-//#define ForbidMutations
 
 #define MutationChancePercent 20
 //#define UseTotalMutation

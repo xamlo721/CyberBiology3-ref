@@ -6,89 +6,16 @@ WorldController* WorldController::instance = 0;
 
 WorldController::WorldController() {
     //Start threads
+    for (int i = 0; i < NumThreads; i++) {
+        threadGoMarker[i] = false;
 
-    //4 threads
-    #ifdef UseFourThreads
-        repeat(NumThreads)
-            threadGoMarker[i] = false;
-
-        for (int i = 0; i < NumThreads; i++) {
-            const uint xCoord1 = 0;
-            const uint yCoord1 = 0;
-            const uint areaWidth1 = FieldCellsWidth / 4;
-            const uint areaHeight1 = FieldCellsHeight;
-            threads[0] = new std::thread(&Field::ProcessPart_MultipleThreads, this, xCoord, yCoord, areaWidth, areaHeight);
-
-            const uint xCoord2 = FieldCellsWidth / 2;
-            const uint yCoord2 = 0;
-            const uint areaWidth2 = (FieldCellsWidth / 4) * 3;
-            const uint areaHeight2 = FieldCellsHeight;
-            threads[0] = new std::thread(&Field::ProcessPart_MultipleThreads, this, xCoord, yCoord, areaWidth, areaHeight);
-
-            const uint xCoord3 = FieldCellsWidth / 4;
-            const uint yCoord3 = 0;
-            const uint areaWidth3 = FieldCellsWidth / 2;
-            const uint areaHeight3 = FieldCellsHeight;
-            threads[0] = new std::thread(&Field::ProcessPart_MultipleThreads, this, xCoord, yCoord, areaWidth, areaHeight);
-
-            const uint xCoord4 = (FieldCellsWidth / 4) * 3;
-            const uint yCoord4 = 0;
-            const uint areaWidth4 = FieldCellsWidth;
-            const uint areaHeight4 = FieldCellsHeight;
-            threads[0] = new std::thread(&Field::ProcessPart_MultipleThreads, this, xCoord, yCoord, areaWidth, areaHeight);
-
-        }
-
-        threads[0] = new std::thread(&Field::ProcessPart_MultipleThreads, this, 0, 0, FieldCellsWidth / 4, FieldCellsHeight, 0);
-        threads[1] = new std::thread(&Field::ProcessPart_MultipleThreads, this, FieldCellsWidth / 2, 0, (FieldCellsWidth / 4) * 3, FieldCellsHeight, 1);
-        threads[2] = new std::thread(&Field::ProcessPart_MultipleThreads, this, FieldCellsWidth / 4, 0, FieldCellsWidth / 2, FieldCellsHeight, 2);
-        threads[3] = new std::thread(&Field::ProcessPart_MultipleThreads, this, (FieldCellsWidth / 4) * 3, 0, FieldCellsWidth, FieldCellsHeight, 3);
-
-    #endif
-
-        //8 threads
-    #ifdef UseEightThreads
-        repeat(NumThreads)
-            threadGoMarker[i] = false;
-
-
-        //for (int i = 0; i < NumThreads; i++) {
-        //    const uint xCoord = 0;
-        //    const uint yCoord = 0;
-        //    const uint areaWidth = (FieldCellsWidth / 8) * (i + 1);
-        //    const uint areaHeight = FieldCellsHeight;
-        //    threads[0] = new std::thread(&WorldController::ProcessPart_AlternativeMultipleThreads, this, xCoord, yCoord, areaWidth, areaHeight, i);
-        //}
-
-        threads[0] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, 0,                         0,  FieldCellsWidth / 8,      FieldCellsHeight, 0);
-        threads[1] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, FieldCellsWidth / 8,       0,  FieldCellsWidth / 4,      FieldCellsHeight, 1);
-        threads[2] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, FieldCellsWidth / 4,       0, (FieldCellsWidth / 8) * 3, FieldCellsHeight, 2);
-        threads[3] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, (FieldCellsWidth / 8) * 3, 0,  FieldCellsWidth / 2,      FieldCellsHeight, 3);
-        threads[4] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, FieldCellsWidth / 2,       0, (FieldCellsWidth / 8) * 5, FieldCellsHeight, 4);
-        threads[5] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, (FieldCellsWidth / 8) * 5, 0, (FieldCellsWidth / 4) * 3, FieldCellsHeight, 5);
-        threads[6] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, (FieldCellsWidth / 4) * 3, 0, (FieldCellsWidth / 8) * 7, FieldCellsHeight, 6);
-        threads[7] = new std::thread(&WorldController::ProcessPart_MultipleThreads, this, (FieldCellsWidth / 8) * 7, 0,  FieldCellsWidth,          FieldCellsHeight, 7);
-    #endif
-
-}
-
-
-void WorldController::jumpToFirstBot() {
-    Object* obj;
-
-    for (int X = 0; X < FieldCellsWidth; ++X) {
-        for (int Y = 0; Y < FieldCellsHeight; ++Y) {
-            obj = gameWorld->allCells[X][Y];
-
-            if (obj) {
-                if (obj->type == EnumObjectType::Bot) {
-                    worldRenderer.renderX = X;
-
-                    return;
-                }
-            }
-        }
+        const uint xCoord = 0;
+        const uint yCoord = 0;
+        const uint areaWidth = (FieldCellsWidth / NumThreads) * (i + 1);
+        const uint areaHeight = FieldCellsHeight;
+        threads[0] = new std::thread(&WorldController::ProcessPart_AlternativeMultipleThreads, this, xCoord, yCoord, areaWidth, areaHeight, i);
     }
+
 }
 
 
@@ -128,18 +55,15 @@ int WorldController::FindHowManyFreeCellsAround(int X, int Y)
 
 void WorldController::ObjectTick(Object* tmpObj)
 {
-    int t = tmpObj->tick();
+     ((Bot*)tmpObj)->tick();
 
-    if (t == 1)
-    {
         //Object destroyed
-        if (tmpObj->type == EnumObjectType::Bot)
-            gameWorld->RemoveBot(tmpObj->x, tmpObj->y, tmpObj->energy);
-        else
-            gameWorld->RemoveObject(tmpObj->x, tmpObj->y);
+        //if (tmpObj->type == EnumObjectType::Bot)
+        //    gameWorld->RemoveBot(tmpObj->x, tmpObj->y, tmpObj->energy);
+        //else
+        //    gameWorld->RemoveObject(tmpObj->x, tmpObj->y);
 
-        return;
-    }
+        //return;
 }
 
 //tick function for single threaded build
@@ -149,8 +73,6 @@ inline void WorldController::tick_single_thread()
 
     gameWorld->objectsTotal = 0;
     gameWorld->botsTotal = 0;
-    gameWorld->applesTotal = 0;
-    gameWorld->organicsTotal = 0;
 
     for (uint ix = 0; ix < FieldCellsWidth; ++ix)
     {
@@ -192,8 +114,7 @@ inline void WorldController::ThreadWait(const uint index)
 
 
 //Start all threads
-void WorldController::StartThreads()
-{
+void WorldController::StartThreads() {
     repeat(NumThreads)
     {
         threadGoMarker[i] = true;
@@ -201,7 +122,7 @@ void WorldController::StartThreads()
 }
 
 //Wait for all threads to finish their calculations
-void WorldController::WaitForThreads()
+void WorldController::waitAllThreads()
 {
     uint threadsReady;
 
@@ -240,8 +161,6 @@ inline void WorldController::tick_multiple_threads()
 
     gameWorld->objectsTotal = 0;
     gameWorld->botsTotal = 0;
-    gameWorld->applesTotal = 0;
-    gameWorld->organicsTotal = 0;
 
     auto addToCounters = [&]()
         {
@@ -249,8 +168,6 @@ inline void WorldController::tick_multiple_threads()
             {
                 gameWorld->objectsTotal += counters[i][0];
                 gameWorld->botsTotal += counters[i][1];
-                gameWorld->applesTotal += counters[i][2];
-                gameWorld->organicsTotal += counters[i][3];
             }
         };
 
@@ -261,7 +178,7 @@ inline void WorldController::tick_multiple_threads()
     StartThreads();
 
     //Wait for threads to synchronize first time
-    WaitForThreads();
+    waitAllThreads();
 
     //Add object counters
     addToCounters();
@@ -273,7 +190,7 @@ inline void WorldController::tick_multiple_threads()
     StartThreads();
 
     //Wait for threads to synchronize second time
-    WaitForThreads();
+    waitAllThreads();
 
     //Add object counters
     addToCounters();
@@ -283,14 +200,8 @@ inline void WorldController::tick_multiple_threads()
 //Tick function
 void WorldController::tick(uint thisFrame)
 {
-    Object::currentFrame = thisFrame;
-
-
-#ifdef UseOneThread
     tick_single_thread();
-#else
-    tick_multiple_threads();
-#endif
+    //tick_multiple_threads();
 }
 
 
