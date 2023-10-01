@@ -55,9 +55,7 @@ const Uint8 presetColors[][4] =
 
 
 
-class Bot final: public Object
-    , public ITickable 
-{
+class Bot final: public Object , public ITickable {
 
     public:
 
@@ -103,11 +101,6 @@ class Bot final: public Object
         //Create brain input data
         BrainInput FillBrainInput();
 
-        void Multiply(int numChildren);
-        void Attack();
-        void Photosynthesis();
-
-
         //----------------------------------------------------------------------------------------------
         //These functions are used for experiments such as adaptation,
         //you are supposed to call them in tick() function, or do not use
@@ -127,7 +120,6 @@ class Bot final: public Object
         bool wasOnLand = false;
 
         bool ArtificialSelectionWatcher_OnTick();
-        bool ArtificialSelectionWatcher_OnDivide();
 
         //----------------------------------------------------------------------------------------------
 
@@ -162,12 +154,7 @@ class Bot final: public Object
         BrainOutput think(BrainInput input);
 
         //Bot tick function, it should always call parents tick function first
-        virtual void tick() 
-            //override
-            ; //ITickable
-
-        void Rotate(int dir = 1);
-
+        virtual void tick()  override; //ITickable
 
         void GiveEnergy(int num, EnumEnergySource::EnergySource src = EnumEnergySource::unknown);
 

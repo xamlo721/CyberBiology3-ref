@@ -4,6 +4,58 @@
 #include "../world/World.h"
 
 
+Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, EnumObjectType::Bot), initialBrain(&prototype->initialBrain) {
+    energy = Energy;
+    stunned = StunAfterBirth;
+    fertilityDelay = FertilityDelay;
+    energyFromPS = 0;
+    energyFromPredation = 0;
+
+    //Copy parent's markers and color
+    memcpy(mutationMarkers, prototype->mutationMarkers, sizeof(mutationMarkers));
+    nextMarker = prototype->nextMarker;
+
+    color = prototype->color;
+
+    //Random direction
+    RandomDirection();
+
+    //Create active brain
+    activeBrain.Clone(&initialBrain);
+    activeBrain.Optimize();
+
+    addaptation_lastX = X;
+}
+
+
+Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::Bot) {
+
+    RandomizeMarkers();
+
+    energy = Energy;
+    stunned = StunAfterBirth;
+    fertilityDelay = FertilityDelay;
+    energyFromPS = 0;
+    energyFromPredation = 0;
+
+    //Randomize Bot brain
+    initialBrain.Randomize();
+    activeBrain.Clone(&initialBrain);
+    activeBrain.Optimize();
+
+    //Random color
+    RandomizeColor();
+
+    //Random direction
+    RandomDirection();
+
+    addaptation_lastX = X;
+
+    //Temporary
+    numMovesY = 1000;
+}
+
+
 void Bot::CalculateLookAt()
 {
     lookAt = Rotations[direction];
@@ -86,119 +138,6 @@ BrainInput Bot::FillBrainInput() {
     input.rotation = (direction * 1.0f) / 7.0f;
 
     return input;
-}
-
-
-void Bot::Multiply(int numChildren)
-{
-    if (ArtificialSelectionWatcher_OnDivide())
-        return;
-
-    for (int b = 0; b < numChildren; ++b)
-    {
-        if (energy <= 1 + GiveBirthCost)
-            return;
-        else
-        {
-            Point freeSpace;
-
-            freeSpace = World::INSTANCE()->FindFreeNeighbourCell(x, y);
-
-            if (freeSpace.x != -1)
-            {
-            #ifndef NewbornGetsHalf
-                TakeEnergy(EnergyPassedToAChild + GiveBirthCost);
-
-                if ((!RandomPercentX10(World::INSTANCE()->params.adaptation_botShouldBeOnLandOnceToMultiply)) || (wasOnLand))
-                    World::INSTANCE()->AddObject(new Bot(freeSpace.x, freeSpace.y, EnergyPassedToAChild, this, RandomPercent(MutationChancePercent)));
-            #else
-                TakeEnergy(energy / 2 + GiveBirthCost);
-
-                if ((!RandomPercentX10(World::INSTANCE()->params.adaptation_botShouldBeOnLandOnceToMultiply)) || (wasOnLand))
-                    World::INSTANCE()->AddObject(new Bot(freeSpace.x, freeSpace.y, energy, this, RandomPercent(MutationChancePercent)));
-            #endif
-
-                return;
-            }
-        }
-    }
-}
-
-void Bot::Attack()
-{
-    if (World::INSTANCE()->IsInBounds(lookAt_x, lookAt_y))
-    {
-        //If there is an object
-        Object* obj = World::INSTANCE()->allCells[lookAt_x][lookAt_y];
-
-        if (obj)
-        {
-            if (obj->type == EnumObjectType::Bot)
-            {
-                #ifdef BotCanEatBot
-                //Eat a Bot
-                GiveEnergy(obj->energy, EnumEnergySource::predation);
-                World::INSTANCE()->RemoveBot(lookAt_x, lookAt_y);
-                #endif
-
-                ++numAttacks;
-            }
-        }
-    }
-}
-
-void Bot::Photosynthesis()
-{
-    //Above water
-    if (!World::INSTANCE()->IsInWater(y))
-    {
-        int toGive;
-
-        //Give energy depending on a season
-        switch (World::INSTANCE()->season) {
-
-            case EnumSeason::summer:
-            #ifdef UseSeasons
-                toGive = PhotosynthesisReward_Summer;
-            #else
-                toGive = World::INSTANCE()->photosynthesisReward;
-                //toGive = FindHowManyFreeCellsAround(x, y) - 3;
-                //if (toGive < 0) toGive = 0;
-            #endif
-                break;
-            case EnumSeason::autumn: case EnumSeason::spring:
-                toGive = PhotosynthesisReward_Autumn;
-                break;
-            case EnumSeason::winter:
-                toGive = PhotosynthesisReward_Winter;
-                //toGive = (ticknum % 5 == 0) ? 2 : 1;
-                break;
-        }
-
-        GiveEnergy(toGive, EnumEnergySource::PS);
-
-        ++numPSonLand;
-    }
-    //Below water
-    else
-    {
-        #ifndef NoPhotosyntesisInOcean
-
-        if (World::INSTANCE()->IsInMud(y))
-        {
-            if (RandomPercentX10(World::INSTANCE()->params.adaptation_PSInMudBlock))
-                return;
-        }
-        else
-        {
-            if (RandomPercentX10(World::INSTANCE()->params.adaptation_PSInOceanBlock))
-                return;
-        }
-
-        GiveEnergy(World::INSTANCE()->photosynthesisReward, EnumEnergySource::PS);
-
-        #endif
-    }
 }
 
 BrainOutput Bot::think(BrainInput input) {
@@ -291,36 +230,6 @@ bool Bot::ArtificialSelectionWatcher_OnTick()
     return false;
 }
 
-
-bool Bot::ArtificialSelectionWatcher_OnDivide()
-{
-    FieldDynamicParams& params = World::INSTANCE()->params;
-
-    //Is on land
-    if (y < FieldCellsHeight - params.oceanLevel)
-    {
-        if (RandomPercentX10(params.adaptation_landBirthBlock))
-            return true;
-    }
-    //Is in ocean
-    else if ((y >= FieldCellsHeight - params.oceanLevel) && (y < FieldCellsHeight - params.mudLevel))
-    {
-        if (RandomPercentX10(params.adaptation_seaBirthBlock))
-            return true;
-    }
-
-    //Force photosynthesis on land
-    if (numPSonLand < 4)
-    {
-        if (RandomPercentX10(params.adaptation_botShouldDoPSOnLandOnceToMultiply))
-            return true;
-    }
-
-    return false;
-}
-
-
-
 void Bot::tick() {
 
     ++lifetime;
@@ -351,89 +260,32 @@ void Bot::tick() {
     //Multiply first
     if (tmpOut.divide > 0)
     {
-        Multiply(tmpOut.divide);
 
-        if (energy <= 0) {
-            //return 1;
-            return;
-        }
     }
 
     //Then attack
     if (tmpOut.attack > 0)  {
-        //If dies of low energy
-        if (TakeEnergy(AttackCost)) {
-            //return 1;
-            return;
-        } else {
-            Attack();
-        }
+
     } else {
         //Rotate after
         if (tmpOut.desired_rotation != (direction * .1f))
         {
-            //If dies of low energy
-            if (TakeEnergy(RotateCost)) {
-                //return 1;
-                return;
-            }
-            Rotate(int(tmpOut.desired_rotation * 10.0f));
+
         }
 
         //Move
         if (tmpOut.move > 0)
         {
-            if (TakeEnergy(MoveCost)) {
-                //return 1;
-                return;
-            }         
-            //Place object in a new place
-            int tmpY = y;
-
-            if (World::INSTANCE()->MoveObject(this, lookAt_x, lookAt_y) == 0)
-            {
-                if(lookAt_y!=tmpY)
-                    ++numMovesY;
-            }
 
         }
         //Photosynthesis
         else if (tmpOut.photosynthesis > 0) {
-            Photosynthesis();
+
         }
     }
 
     //return 0;
     return;
-}
-
-
-
-void Bot::Rotate(int dir)
-{
-    dir = dir % 8;
-
-    if (dir < 0)
-        dir = 8 + dir;
-
-    int delta = (direction - dir);
-
-    if (delta < 0)
-    {
-        if (delta > 4)
-            --direction;
-        else
-            ++direction;
-    }
-    else if (delta > 0)
-    {
-        if (delta > 4)
-            ++direction;
-        else
-            --direction;
-    }
-
-    direction = direction % 8;
 }
 
 
@@ -555,69 +407,16 @@ int Bot::FindKinship(Bot* stranger)
     return numMarkers;
 }
 
-void Bot::SetColor(Color newColor)
-{
+void Bot::SetColor(Color newColor) {
     color = newColor;
 }
 
-void Bot::SetColor(Uint8 r, Uint8 g, Uint8 b)
-{
+void Bot::SetColor(Uint8 r, Uint8 g, Uint8 b) {
     color.r = r;
     color.g = g;
     color.b = b;
 }
 
-
-Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, EnumObjectType::Bot), initialBrain(&prototype->initialBrain) {
-    energy = Energy;
-    stunned = StunAfterBirth;
-    fertilityDelay = FertilityDelay;
-    energyFromPS = 0;
-    energyFromPredation = 0;
-
-    //Copy parent's markers and color
-    memcpy(mutationMarkers, prototype->mutationMarkers, sizeof(mutationMarkers));
-    nextMarker = prototype->nextMarker;
-
-    color = prototype->color;
-
-    //Random direction
-    RandomDirection();
-
-    //Create active brain
-    activeBrain.Clone(&initialBrain);
-    activeBrain.Optimize();
-
-    addaptation_lastX = X;
-}
-
-
-Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::Bot) {
-
-    RandomizeMarkers();
-
-    energy = Energy;
-    stunned = StunAfterBirth;
-    fertilityDelay = FertilityDelay;
-    energyFromPS = 0;
-    energyFromPredation = 0;
-
-    //Randomize Bot brain
-    initialBrain.Randomize();
-    activeBrain.Clone(&initialBrain);
-    activeBrain.Optimize();
-
-    //Random color
-    RandomizeColor();
-
-    //Random direction
-    RandomDirection();
-
-    addaptation_lastX = X;
-
-    //Temporary
-    numMovesY = 1000;
-}
 
 
 
