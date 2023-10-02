@@ -5,37 +5,19 @@
 #include "../renderer/WorldRenderer.h"
 #include "../world/World.h"
 
-void ObjectRenderer::drawObjects(Object* allCells[FieldCellsWidth][FieldCellsHeight], IObjectRenderer * worker) {
+void ObjectRenderer::drawObjects(std::list<Object*> entityes, IObjectRenderer * worker) {
 
-    //World::worldEntityMap;
-    //Objects
-    Object* tmpObj;
-    int ix = WorldRenderer::renderX;
 
-    for (uint i = 0; i < FieldRenderCellsWidth; ++i) {
-
-        for (uint iy = 0; iy < FieldCellsHeight; ++iy) {
-
-            if (ix >= FieldCellsWidth) {
-                ix -= FieldCellsWidth;
-            }
-
-            tmpObj = World::INSTANCE()->worldEntityMap[ix][iy];
-            if (!tmpObj) {
-
-                drawOne(tmpObj, worker);
-            }
-        }
-
-        ++ix;
+    for (Object* tmpObj : entityes) {
+        drawOne(tmpObj, worker);
     }
 
 }
 
 void ObjectRenderer::drawOne(Object* object, IObjectRenderer* worker) {
-    if (object) {
+    if (object->isAlive) {
         //Draw function switch, based on selected render type
-        worker->draw(object);
+        worker->draw(object);   
     }
 
 }

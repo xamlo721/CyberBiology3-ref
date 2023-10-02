@@ -898,8 +898,7 @@ void ApplicationGUIManager::Render()
 		//Object* objects[FieldCellsWidth][FieldCellsHeight];
 
 		//objects = *(void*)&World::worldEntityMap;
-
-		ObjectRenderer::drawObjects(nullptr, worker);
+		ObjectRenderer::drawObjects(World::INSTANCE()->getObjectsForRenderer(), worker);
 
 		//Highlight selected object
 		HighlightSelection();

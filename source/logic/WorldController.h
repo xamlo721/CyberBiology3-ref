@@ -57,12 +57,7 @@ class WorldController {
 
 
         //tick function for single threaded build
-        inline void tick_single_thread();
-
-        //Process function for multi threaded simulation
-        void ProcessPart_MultipleThreads(const uint X1, const uint Y1, const uint X2, const uint Y2, const uint index);
-
-        void ProcessPart_AlternativeMultipleThreads(const uint X1, const uint Y1, const uint X2, const uint Y2, const uint index);
+        void tick_single_thread();
 
         //Start all threads
         void StartThreads();

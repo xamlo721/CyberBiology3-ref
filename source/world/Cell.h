@@ -1,12 +1,12 @@
 #pragma once
 
-
-#include "../entity/EnumObjectType.h"
 #include "../MyTypes.h"
 #include "../world/EnumCellMaterial.h"
+#include "../entity/Object.h"
+#include "../entity/EnumObjectType.h"
 
 
-//Одна клетка поля. Должна занимать в озу 4 байта, ну да ладно
+//Одна клетка поля. Должна занимать в озу 8 байта, ну да ладно
 class Cell {
 
 	public:
@@ -22,19 +22,22 @@ class Cell {
 
 		abool isLocked;
 
+		Object* object;
+
 		Cell() {
 			objectType = EnumObjectType::Empty;
 			material = EnumCellMaterial::common;
 			energy = 0;
 			isLocked = false;
+			object = NULL;
 		}
 
-		Cell(EnumObjectType objectType, EnumCellMaterial material, Uint8 energy) {
-
+		Cell(EnumObjectType objectType, EnumCellMaterial material, Uint8 energy, Object* object) {
 			objectType = objectType;
 			material = material;
 			energy = energy;
 			isLocked = false;
+			object = object;
 		}
 
 };

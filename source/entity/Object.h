@@ -29,6 +29,9 @@ class Object : public virtual IRenderableObject, public ITickable {
 		EnumObjectType::ObjectTypes type;
 
 
+		//Маркер удаления
+		bool isAlive;
+
 	public:
 
 		Object(int xCoord, int yCoord, EnumObjectType::ObjectTypes type);

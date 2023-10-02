@@ -13,20 +13,26 @@ WorldController* WorldController::instance = 0;
 WorldController::WorldController() {
 
     //Start threads
-    for (int i = 0; i < NumThreads; i++) {
-        threadGoMarker[i] = false;
+    //for (int i = 0; i < NumThreads; i++) {
+    //    threadGoMarker[i] = false;
 
-        const uint xCoord = 0;
-        const uint yCoord = 0;
-        const uint areaWidth = (FieldCellsWidth / NumThreads) * (i + 1);
-        const uint areaHeight = FieldCellsHeight;
-        //threads[i] = new std::thread(&WorldController::ProcessPart_AlternativeMultipleThreads, this, xCoord, yCoord, areaWidth, areaHeight, i);
-    }
+    //    const uint xCoord = 0;
+    //    const uint yCoord = 0;
+    //    const uint areaWidth = (FieldCellsWidth / NumThreads) * (i + 1);
+    //    const uint areaHeight = FieldCellsHeight;
+    //    //threads[i] = new std::thread(&WorldController::ProcessPart_AlternativeMultipleThreads, this, xCoord, yCoord, areaWidth, areaHeight, i);
+    //}
 
 }
 
 void WorldController::ObjectTick(Object* tmpObj) {
     
+    //Object destroyed
+    if (!tmpObj->isAlive) {
+        return;
+    }
+
+
     CellCluster* cluster = this->gameWorld->getObjectsArround(tmpObj);
     //1) 
     World::lock();
@@ -34,7 +40,7 @@ void WorldController::ObjectTick(Object* tmpObj) {
     cluster->lock();
     //3)
     World::unlock();
-
+    
     {
         /*This function returns 1 when the object is destroyed. OUTDATED!!!!!!
          You should call it on every simulation tick before you
@@ -44,15 +50,7 @@ void WorldController::ObjectTick(Object* tmpObj) {
          1 - object destroyed
          2 - nothing to do(last tick frame matches current frame)*/
 
-         //Object destroyed
-        if (!((Bot*)tmpObj)->isAlive) {
-
-            gameWorld->removeObjectUnsafetly(tmpObj->x, tmpObj->y);
-            cluster->unlock();
-            delete cluster;
-            return;
-        }
-
+         
         ((Bot*)tmpObj)->tick();
         BrainOutput actions = ((Bot*)tmpObj)->tmpOut;
 
@@ -94,48 +92,27 @@ void WorldController::ObjectTick(Object* tmpObj) {
             }
 
         }
+        
     }
-     cluster->unlock();
-     delete cluster;
+   
+    gameWorld->updateCluster(cluster);
+    cluster->unlock();
+    delete cluster;
 
 }
 
 //tick function for single threaded build
-inline void WorldController::tick_single_thread() {
+void WorldController::tick_single_thread() {
 
+    while (gameWorld->hasUnprocessedObject()) {
 
-    //for (Object* object : World::INSTANCE()->entityes) {
+        Object* tmpObj = gameWorld->getNextUnprocessedObject();
 
-    //    Object* tmpObj = (Object* ) object;
+        if (tmpObj) {
 
-    //    ObjectTick(tmpObj);//unsafe cast!
-
-    //    gameWorld->tempEntityes.push_back(object);
-
-    //}
-    Object* tmpObj;
-    for (uint ix = 0; ix < FieldCellsWidth; ++ix) {
-
-        for (uint iy = 0; iy < FieldCellsHeight; ++iy) {
-
-            if (gameWorld->worldMap[ix][iy].objectType == EnumObjectType::Bot) {
-
-                tmpObj = gameWorld->worldEntityMap[ix][iy];
-
-                if (tmpObj) {
-                    //++gameWorld->objectsTotal;
-
-                    //if (tmpObj->type == EnumObjectType::Bot)
-                    //    ++gameWorld->botsTotal;
-
-                    ObjectTick(tmpObj);
-                }
-            }
-        }
-
+            ObjectTick(tmpObj);
+        }  
     }
-
-
 
 }
 
@@ -244,15 +221,17 @@ inline void WorldController::tick_multiple_threads() {
 
 //Tick function
 void WorldController::tick(uint thisFrame) {
+
+    gameWorld->startStep();
+
     tick_single_thread();
 
-    gameWorld->entityes = gameWorld->tempEntityes;
-    gameWorld->tempEntityes.clear();
+    gameWorld->stopStep();
+
 }
 
 
-void WorldController::PauseThreads()
-{
+void WorldController::PauseThreads() {
     pauseThreads = true;
 }
 

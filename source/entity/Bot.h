@@ -68,9 +68,6 @@ class Bot final: public Object {
 
         void CalculateLookAt();
 
-        //Маркер удаления
-        bool isAlive;
-
 
         //Active brain - one that is used during simulation, may be changed or optimized
         BotNeuralNet activeBrain;

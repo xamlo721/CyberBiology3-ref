@@ -170,7 +170,7 @@
 #define PhotosynthesisReward_Winter 1
 
 #define MaxPossibleEnergyForABot 500
-#define MaxBotLifetime 2000
+#define MaxBotLifetime 200
 
 #define NewbornGetsHalf
 #define EnergyPassedToAChild 100

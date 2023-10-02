@@ -7,24 +7,22 @@ World* World::instance = 0;
 
 World::World() {
 
-    //Clear array
-    memset(worldEntityMap, NULL, sizeof(Cell*) * FieldCellsWidth * FieldCellsHeight);
-
     this->generateWorldBorder();
 }
+
 
 void World::generateWorldBorder() {
 
     //Горизонтальные стены
     for (int i = 0; i < FieldCellsWidth; i++) {
-        worldMap[i][0].objectType = EnumObjectType::WorldBorder;
-        worldMap[i][FieldCellsHeight - 1].objectType = EnumObjectType::WorldBorder;
+        world.worldMap[i][0].objectType = EnumObjectType::WorldBorder;
+        world.worldMap[i][FieldCellsHeight - 1].objectType = EnumObjectType::WorldBorder;
     }
 
     //Вертикальные стены 
     for (int i = 0; i < FieldCellsHeight; i++) {
-        worldMap[0][i].objectType = EnumObjectType::WorldBorder;
-        worldMap[FieldCellsWidth - 1][i].objectType = EnumObjectType::WorldBorder;
+        world.worldMap[0][i].objectType = EnumObjectType::WorldBorder;
+        world.worldMap[FieldCellsWidth - 1][i].objectType = EnumObjectType::WorldBorder;
     }
 }
 
@@ -40,38 +38,24 @@ bool World::addObjectSafetly(Object* obj) {
     isLocked = true;
 
     //Cell thread sync
-    while (worldMap[obj->x][obj->y].isLocked) {
+    while (world.worldMap[obj->x][obj->y].isLocked) {
         std::this_thread::yield();
     }
 
     //2) CELL LOCK
-    worldMap[obj->x][obj->y].isLocked = true;
+    world.worldMap[obj->x][obj->y].isLocked = true;
 
     //3) World UNLOCK
     isLocked = false;
 
-    bool returnValue = this->addObjectUnsafetly(obj);
+    bool returnValue = world.addObjectUnsafetly(obj);
 
     //4) CELL UNLOCK
-    worldMap[obj->x][obj->y].isLocked = false;
+    world.worldMap[obj->x][obj->y].isLocked = false;
 
     return returnValue;
 }
 
-bool World::addObjectUnsafetly(Object* obj) {
-    //Если там занято, о чём речь?
-    if (worldMap[obj->x][obj->y].objectType != EnumObjectType::Empty) {
-        return false;
-    }
-
-    //Пометить, что теперь там бот
-    worldMap[obj->x][obj->y].objectType = EnumObjectType::Bot;
-
-    if (obj->type == EnumObjectType::Bot) {
-        worldEntityMap[obj->x][obj->y] = (Bot*)obj; //unsafe cast
-        tempEntityes.push_back((Bot*)obj);
-    }
-}
 
 void World::removeObjectSafetly(int X, int Y) {
 
@@ -85,42 +69,24 @@ void World::removeObjectSafetly(int X, int Y) {
     }
 
     {//Cell thread sync
-        while (worldMap[X][Y].isLocked) {
+        while (world.worldMap[X][Y].isLocked) {
             std::this_thread::yield();
         }
         //2) CELL LOCK
-        worldMap[X][Y].isLocked = true;
+        world.worldMap[X][Y].isLocked = true;
     }
 
     //3) World UNLOCK
     isLocked = false;
 
     {//processing
-        this->removeObjectUnsafetly(X, Y);
-
+        world.removeObjectUnsafetly(X, Y);
     }
 
 
     //4) CELL UNLOCK
-    worldMap[X][X].isLocked = false;
+    world.worldMap[X][X].isLocked = false;
 
-}
-#include <iostream>
-
-void World::removeObjectUnsafetly(int X, int Y) {
-    if (worldMap[X][Y].objectType != EnumObjectType::Empty) {
-        Object* tmpO = worldEntityMap[X][Y];
-
-
-        entityes.remove(tmpO);
-        tempEntityes.remove(tmpO);
-
-        delete tmpO;
-
-        worldMap[X][Y].objectType = EnumObjectType::Empty;
-        worldEntityMap[X][Y] = NULL;
-        std::cout << "delete object X " << X << ", Y " << Y;
-    }
 }
 
 bool World::moveObject(Object* obj, int toX, int toY) {
@@ -143,29 +109,29 @@ bool World::moveObject(Object* obj, int toX, int toY) {
     }
 
     {//Cell thread sync
-        while (worldMap[obj->x][obj->y].isLocked) {
+        while (world.worldMap[obj->x][obj->y].isLocked) {
             std::this_thread::yield();
         }
         //2) CELL LOCK
-        worldMap[toX][toY].isLocked = true;
+        world.worldMap[toX][toY].isLocked = true;
     }
 
 
 
-    if (worldMap[toX][toY].objectType != EnumObjectType::Empty) {
+    if (world.worldMap[toX][toY].objectType != EnumObjectType::Empty) {
         isLocked = false;
-        worldMap[toX][toY].isLocked = false;
+        world.worldMap[toX][toY].isLocked = false;
         return false;
     }
     
 
     {//Cell thread sync
-        while (worldMap[obj->x][obj->y].isLocked) {
+        while (world.worldMap[obj->x][obj->y].isLocked) {
             std::this_thread::yield();
         }
 
         //2) CELL LOCK
-        worldMap[obj->x][obj->y].isLocked = true;
+        world.worldMap[obj->x][obj->y].isLocked = true;
     }
 
 
@@ -174,15 +140,15 @@ bool World::moveObject(Object* obj, int toX, int toY) {
 
     //Processing
     {
-        Object* tmpObj = worldEntityMap[obj->x][obj->y];
+        Object* tmpObj = world.worldMap[obj->x][obj->y].object;
 
         //Пометить, что теперь там нет бота
-        worldMap[obj->x][obj->y].objectType = EnumObjectType::Empty;
-        worldEntityMap[obj->x][obj->y] = NULL;
+        world.worldMap[obj->x][obj->y].objectType = EnumObjectType::Empty;
+        world.worldMap[obj->x][obj->y].object = NULL;
 
         //Пометить, что теперь там бот
-        worldMap[toX][toY].objectType = EnumObjectType::Bot;
-        worldEntityMap[toX][toY] = tmpObj;
+        world.worldMap[toX][toY].objectType = EnumObjectType::Bot;
+        world.worldMap[toX][toY].object = tmpObj;
 
         tmpObj->x = toX;
         tmpObj->y = toY;
@@ -190,10 +156,81 @@ bool World::moveObject(Object* obj, int toX, int toY) {
     }
 
     //4) CELL UNLOCK
-    worldMap[obj->x][obj->y].isLocked = false;
-    worldMap[toX][toY].isLocked = false;
+    world.worldMap[obj->x][obj->y].isLocked = false;
+    world.worldMap[toX][toY].isLocked = false;
 
     return true;
+}
+
+//Swap entityes and tempEntityes
+void World::startStep() {
+    {//World thread sync
+        while (isLocked) {
+            std::this_thread::yield();
+        }
+
+        //1) WORLD LOCK
+        isLocked = true;
+    }
+
+    //world.entityes.clear();//just for my paranoia
+
+    //for (Object* obj : world.tempEntityes) {
+    //    world.entityes.push_back(obj);
+    //}
+
+    //3) World UNLOCK
+    isLocked = false;
+
+}
+
+Object* World::getNextUnprocessedObject() {
+
+    if (!this->hasUnprocessedObject()) {
+        return NULL;
+    }
+
+    Object* returnValue = world.entityes.front();
+    world.entityes.pop_front(); //why i can use somethink like takeFront()..
+
+    Color c = returnValue->GetColor();
+
+    return returnValue;
+}
+
+bool World::hasUnprocessedObject() {
+    return (world.entityes.size() != 0);
+}
+
+void World::stopStep() {
+
+    {//World thread sync
+        while (isLocked) {
+            std::this_thread::yield();
+        }
+
+        //1) WORLD LOCK
+        isLocked = true;
+    }
+
+
+    for (Object* obj : world.tempEntityes) {
+        Color c = obj->GetColor();
+
+        if (!obj->isAlive) {
+            delete obj;
+            continue;
+        }
+        world.entityes.push_back(obj);
+
+    }
+
+    world.tempEntityes.clear();
+
+
+    //3) World UNLOCK
+    isLocked = false;
+
 }
 
 CellCluster* World::getObjectsArround(Object* obj) {
@@ -214,8 +251,7 @@ CellCluster* World::getObjectsArround(Object* obj) {
         //-1 to +1
         for (int nJ = 0, j = - visibleDistance; j <= visibleDistance; nJ++, j++) {
 
-            cluster->area[nI][nJ] = &worldMap[obj->x + i][obj->y + j];
-            cluster->objects[nI][nJ] = worldEntityMap[obj->x + i][obj->y + j];
+            cluster->area[nI][nJ] = &world.worldMap[obj->x + i][obj->y + j];
 
         }
 
@@ -226,6 +262,21 @@ CellCluster* World::getObjectsArround(Object* obj) {
     isLocked = false;
 
     return cluster;
+}
+
+void World::updateCluster(CellCluster* cluster) {
+
+    for (int i = 0; i < areaSize; i++) {
+        for (int j = 0; j < areaSize; j++) {
+
+            Cell * updatedCell = cluster->area[i][j];
+            if (updatedCell->objectType == EnumObjectType::Bot) {
+                Color c = updatedCell->object->GetColor();
+                world.tempEntityes.push_back(updatedCell->object);
+            }
+
+        }
+    }
 }
 
 
@@ -260,18 +311,18 @@ bool World::IsInMud(int Y) {
 
 
 Object* World::GetObjectLocalCoords(int X, int Y) {
-    return worldEntityMap[X][Y];
+    return world.worldMap[X][Y].object;
 }
 
 
 
 
 uint World::GetNumObjects() {
-    return objectsTotal;
+    return world.entityes.size();
 }
 
 uint World::GetNumBots() {
-    return botsTotal;
+    return world.tempEntityes.size();
 }
 
 
@@ -298,7 +349,7 @@ bool World::ValidateObjectExistance(Object* obj) {
 
         for (uint iy = 0; iy < FieldCellsHeight; ++iy) {
 
-            if (worldEntityMap[ix][iy] == obj) {
+            if (world.worldMap[ix][iy].object == obj) {
                 return true;
             }
 
@@ -309,3 +360,11 @@ bool World::ValidateObjectExistance(Object* obj) {
     return false;
 }
 
+std::list<Object*> World::getObjectsForRenderer() {
+
+    for (Object* o : world.entityes) {
+        Color c = o->GetColor();
+    }
+
+    return world.entityes;
+}

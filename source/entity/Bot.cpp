@@ -78,10 +78,6 @@ void Bot::RandomDirection() {
     direction = RandomVal(8);
 }
 
-void Bot::ChangeColor(const int str) {
-    color.RandomChange(str);
-}
-
 BrainInput Bot::FillBrainInput() {
 
     BrainInput input;
@@ -94,7 +90,7 @@ BrainInput Bot::FillBrainInput() {
     }
     else
     {
-        Object* tmpDest = World::INSTANCE()->worldEntityMap[lookAt_x][lookAt_y];
+        Object* tmpDest = World::INSTANCE()->GetObjectLocalCoords(lookAt_x, lookAt_y);
 
         //Destination cell is empty
         if (!tmpDest)

@@ -14,13 +14,12 @@
 
 #include <list>
 
+#include "PrivateSyncWorld.h"
 
 class World {
 
     private:
         static World* instance;
-
-
 
         // !!!!!!!!!!!WARNING!!!!!!!!!!!
         // 
@@ -32,24 +31,11 @@ class World {
         // !!!!!!!!!!!WARNING!!!!!!!!!!!
         abool isLocked = false;
 
+        PrivateSyncWorld world;
 
         //Needed to calculate number of active objects and bots (calculated on every frame)
-        uint objectsTotal = 0;
-        uint botsTotal = 0;
 
     public:
-        //Игровое поле
-        Cell worldMap[FieldCellsWidth][FieldCellsHeight];
-        //То же самое игровое поле, только с объектами на нём
-        Object* worldEntityMap[FieldCellsWidth][FieldCellsHeight];
-
-        //Список объектов ожидающих обновления
-        //static std::list<ITickable*> entityes;
-        std::list<Object*> entityes;
-
-        //Список обновленных объектов
-        //static std::list<ITickable*> tempEntityes;
-        std::list<Object*> tempEntityes;
 
         static World* INSTANCE() {
             if (instance == 0) {
@@ -86,14 +72,11 @@ class World {
 
         //thread-safetly
         bool addObjectSafetly(Object* obj);
-        //thread-unsafetly
-        bool addObjectUnsafetly(Object* obj);
 
         //Remove object and delete object class
         //thread-safetly
         void removeObjectSafetly(int X, int Y);
 
-        void removeObjectUnsafetly(int X, int Y);
 
         void RemoveAllObjects();
 
@@ -102,9 +85,18 @@ class World {
 
         CellCluster* getObjectsArround(Object * obj);
 
+        void updateCluster(CellCluster* cluster);
 
 
         //Service
+        void startStep();
+
+        Object* getNextUnprocessedObject();
+
+        bool hasUnprocessedObject();
+
+        void stopStep();
+
 
         //Is cell out if bounds?
         bool IsInBounds(int X, int Y);
@@ -126,5 +118,8 @@ class World {
 
         bool ValidateObjectExistance(Object* obj);
 
+
+        //yes, its achitecture mistacke, dont use it.
+        std::list<Object*> getObjectsForRenderer();
 };
 

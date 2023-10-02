@@ -14,7 +14,6 @@ class CellCluster {
 	public :
 
 		Cell* area[areaSize][areaSize];
-		Object* objects[areaSize][areaSize];
 
 	public:
 
