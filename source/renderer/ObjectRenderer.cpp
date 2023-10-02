@@ -21,9 +21,10 @@ void ObjectRenderer::drawObjects(Object* allCells[FieldCellsWidth][FieldCellsHei
             }
 
             tmpObj = World::INSTANCE()->worldEntityMap[ix][iy];
+            if (!tmpObj) {
 
-            drawOne(tmpObj, worker);
-
+                drawOne(tmpObj, worker);
+            }
         }
 
         ++ix;

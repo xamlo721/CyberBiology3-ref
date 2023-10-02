@@ -29,7 +29,7 @@ void World::generateWorldBorder() {
 }
 
 
-bool World::addObject(Object* obj) {
+bool World::addObjectSafetly(Object* obj) {
 
     //World thread sync
     while (isLocked) {
@@ -50,15 +50,17 @@ bool World::addObject(Object* obj) {
     //3) World UNLOCK
     isLocked = false;
 
+    bool returnValue = this->addObjectUnsafetly(obj);
+
+    //4) CELL UNLOCK
+    worldMap[obj->x][obj->y].isLocked = false;
+
+    return returnValue;
+}
+
+bool World::addObjectUnsafetly(Object* obj) {
     //Если там занято, о чём речь?
     if (worldMap[obj->x][obj->y].objectType != EnumObjectType::Empty) {
-
-        worldMap[obj->x][obj->y].isLocked = false;
-
-        return false;
-    }
-
-    if (worldMap[obj->x][obj->y].objectType == EnumObjectType::WorldBorder) {
         return false;
     }
 
@@ -69,12 +71,56 @@ bool World::addObject(Object* obj) {
         worldEntityMap[obj->x][obj->y] = (Bot*)obj; //unsafe cast
         tempEntityes.push_back((Bot*)obj);
     }
+}
+
+void World::removeObjectSafetly(int X, int Y) {
+
+    {//World thread sync
+        while (isLocked) {
+            std::this_thread::yield();
+        }
+
+        //1) WORLD LOCK
+        isLocked = true;
+    }
+
+    {//Cell thread sync
+        while (worldMap[X][Y].isLocked) {
+            std::this_thread::yield();
+        }
+        //2) CELL LOCK
+        worldMap[X][Y].isLocked = true;
+    }
+
+    //3) World UNLOCK
+    isLocked = false;
+
+    {//processing
+        this->removeObjectUnsafetly(X, Y);
+
+    }
 
 
     //4) CELL UNLOCK
-    worldMap[obj->x][obj->y].isLocked = false;
+    worldMap[X][X].isLocked = false;
 
-    return true;
+}
+#include <iostream>
+
+void World::removeObjectUnsafetly(int X, int Y) {
+    if (worldMap[X][Y].objectType != EnumObjectType::Empty) {
+        Object* tmpO = worldEntityMap[X][Y];
+
+
+        entityes.remove(tmpO);
+        tempEntityes.remove(tmpO);
+
+        delete tmpO;
+
+        worldMap[X][Y].objectType = EnumObjectType::Empty;
+        worldEntityMap[X][Y] = NULL;
+        std::cout << "delete object X " << X << ", Y " << Y;
+    }
 }
 
 bool World::moveObject(Object* obj, int toX, int toY) {
@@ -183,57 +229,13 @@ CellCluster* World::getObjectsArround(Object* obj) {
 }
 
 
-void World::removeObject(int X, int Y) {
-
-    {//World thread sync
-        while (isLocked) {
-            std::this_thread::yield();
-        }
-
-        //1) WORLD LOCK
-        isLocked = true;
-    }
-
-    {//Cell thread sync
-        while (worldMap[X][Y].isLocked) {
-            std::this_thread::yield();
-        }
-        //2) CELL LOCK
-        worldMap[X][Y].isLocked = true;
-    }
-
-    //3) World UNLOCK
-    isLocked = false;
-
-    {//processing
-
-        if (worldMap[X][Y].objectType != EnumObjectType::Empty) {
-            Object* tmpO = worldEntityMap[X][Y];
-
-            worldMap[X][Y].objectType = EnumObjectType::Empty;
-
-            entityes.remove(tmpO);
-            tempEntityes.remove(tmpO);
-
-            delete tmpO;
-
-            worldEntityMap[X][Y] = NULL;
-        }
-    }
-
-
-    //4) CELL UNLOCK
-    worldMap[X][X].isLocked = false;
-
-}
-
 void World::RemoveAllObjects() {
 
     for (int cx = 0; cx < FieldCellsWidth; ++cx)
     {
         for (int cy = 0; cy < FieldCellsHeight; ++cy)
         {
-            removeObject(cx, cy);
+            removeObjectSafetly(cx, cy);
         }
     }
 

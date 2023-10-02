@@ -219,20 +219,23 @@ void Bot::tick() {
 
     energy -= EveryTickEnergyPenalty;
 
-    if (ArtificialSelectionWatcher_OnTick())
+    if (ArtificialSelectionWatcher_OnTick()) {
         isAlive = false;
         return;
+    }
 
-    if (((energy) <= 0) || (lifetime >= MaxBotLifetime))
+    if (((energy) <= 0) || (lifetime >= MaxBotLifetime)) {
         isAlive = false;
         return;
+    }
 
     BrainOutput tmpOut;
 
     CalculateLookAt();
 
-    if (!World::INSTANCE()->IsInWater(y))
+    if (!World::INSTANCE()->IsInWater(y)) {
         wasOnLand = true;
+    }
 
     //Fill brain input structure
     BrainInput input = FillBrainInput();

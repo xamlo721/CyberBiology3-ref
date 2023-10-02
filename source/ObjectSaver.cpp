@@ -99,7 +99,7 @@ ObjectSaver::WorldParams ObjectSaver::LoadWorld(World* world, char* filename)
                     tmpObj->x = x;
                     tmpObj->y = y;
 
-                    world->addObject(tmpObj);
+                    world->addObjectSafetly(tmpObj);
                 }
             }
         }

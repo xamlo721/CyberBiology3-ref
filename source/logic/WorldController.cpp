@@ -47,8 +47,9 @@ void WorldController::ObjectTick(Object* tmpObj) {
          //Object destroyed
         if (!((Bot*)tmpObj)->isAlive) {
 
-            gameWorld->removeObject(tmpObj->x, tmpObj->y);
-
+            gameWorld->removeObjectUnsafetly(tmpObj->x, tmpObj->y);
+            cluster->unlock();
+            delete cluster;
             return;
         }
 
@@ -113,23 +114,29 @@ inline void WorldController::tick_single_thread() {
 
     //}
     Object* tmpObj;
-    for (uint ix = 0; ix < FieldCellsWidth; ++ix)
-    {
-        for (uint iy = 0; iy < FieldCellsHeight; ++iy)
-        {
-            tmpObj = gameWorld->worldEntityMap[ix][iy];
+    for (uint ix = 0; ix < FieldCellsWidth; ++ix) {
 
-            if (tmpObj) {
-                //++gameWorld->objectsTotal;
+        for (uint iy = 0; iy < FieldCellsHeight; ++iy) {
 
-                //if (tmpObj->type == EnumObjectType::Bot)
-                //    ++gameWorld->botsTotal;
+            if (gameWorld->worldMap[ix][iy].objectType == EnumObjectType::Bot) {
 
-                ObjectTick(tmpObj);
+                tmpObj = gameWorld->worldEntityMap[ix][iy];
+
+                if (tmpObj) {
+                    //++gameWorld->objectsTotal;
+
+                    //if (tmpObj->type == EnumObjectType::Bot)
+                    //    ++gameWorld->botsTotal;
+
+                    ObjectTick(tmpObj);
+                }
             }
         }
 
     }
+
+
+
 }
 
 //Wait for a signal 
@@ -260,7 +267,7 @@ void WorldController::SpawnControlGroup()
     {
         Bot* tmpBot = new Bot(RandomVal(FieldCellsWidth-2), RandomVal(FieldCellsHeight), MaxPossibleEnergyForABot);
 
-        if (!gameWorld->addObject(tmpBot))
+        if (!gameWorld->addObjectSafetly(tmpBot))
             delete tmpBot;
     }
 }

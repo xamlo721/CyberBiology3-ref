@@ -478,7 +478,7 @@ void ApplicationGUIManager::DrawDangerousWindow()
 							continue;
 
 						if (o->type == EnumObjectType::Bot)
-							Simulation::INSTANCE()->worldController->gameWorld->removeObject(cx, cy);
+							Simulation::INSTANCE()->worldController->gameWorld->removeObjectSafetly(cx, cy);
 					}
 				}
 			}
@@ -803,7 +803,7 @@ void ApplicationGUIManager::MouseClick()
 					for (int cy = -Simulation::INSTANCE()->brushSize; cy < Simulation::INSTANCE()->brushSize + 1; ++cy)
 					{
 						if (Simulation::INSTANCE()->worldController->gameWorld->IsInBounds(fieldCoords.x + cx, fieldCoords.y + cy))
-							Simulation::INSTANCE()->worldController->gameWorld->removeObject(fieldCoords.x + cx, fieldCoords.y + cy);
+							Simulation::INSTANCE()->worldController->gameWorld->removeObjectSafetly(fieldCoords.x + cx, fieldCoords.y + cy);
 					}
 				}
 			}
@@ -822,7 +822,7 @@ void ApplicationGUIManager::MouseClick()
 							obj->y = fieldCoords.y;
 							obj->energy = MaxPossibleEnergyForABot;
 
-							if (Simulation::INSTANCE()->worldController->gameWorld->addObject(obj))
+							if (Simulation::INSTANCE()->worldController->gameWorld->addObjectSafetly(obj))
 							{
 								Simulation::INSTANCE()->LogPrint("Object loaded\r\n");
 							}

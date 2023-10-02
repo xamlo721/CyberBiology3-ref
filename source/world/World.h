@@ -85,11 +85,16 @@ class World {
 
 
         //thread-safetly
-        bool addObject(Object* obj);
+        bool addObjectSafetly(Object* obj);
+        //thread-unsafetly
+        bool addObjectUnsafetly(Object* obj);
 
         //Remove object and delete object class
         //thread-safetly
-        void removeObject(int X, int Y);
+        void removeObjectSafetly(int X, int Y);
+
+        void removeObjectUnsafetly(int X, int Y);
+
         void RemoveAllObjects();
 
         //thread-safetly
