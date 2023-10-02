@@ -10,30 +10,15 @@ typedef std::atomic_bool abool;
 typedef std::string string;
 
 
-struct Color
-{
-	int r=0, g=0, b=0;
+struct Color {
+	public:
+		byte r = 0;
+		byte g = 0;
+		byte b = 0;
 
-	void operator/=(int);
-	void operator+=(Color);
+		void SetRandom();
 
-	void SetRandom();
-
-	void RandomChange(int str);
-
-	int ToInt();
-	void FromInt(int);
-
-	Color(int);
-	Color();
-
-private:
-
-	union intchar
-	{
-		int i;
-		char c[4];
-	};
+		Color();
 };
 
 
@@ -49,12 +34,9 @@ struct Point
 	
 };
 
-struct Rect final: public SDL_Rect
-{
+struct Rect final: public SDL_Rect {
 	bool IsInBounds(Point p);	
 };
-
-
 
 
 //Get random number (0 to max-1)
@@ -73,9 +55,6 @@ float RandomFloatInRange(float min, float max);
 
 //Simple loop
 #define repeat(times) for(int i=0;i<times;++i)
-
-
-
 
 //High precision tick counter
 typedef std::chrono::steady_clock Clock;
