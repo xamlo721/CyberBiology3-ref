@@ -5,15 +5,12 @@
 
 
 Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, EnumObjectType::Bot), initialBrain(&prototype->initialBrain) {
+    isAlive = true;
     energy = Energy;
     stunned = StunAfterBirth;
     fertilityDelay = FertilityDelay;
     energyFromPS = 0;
     energyFromPredation = 0;
-
-    //Copy parent's markers and color
-    memcpy(mutationMarkers, prototype->mutationMarkers, sizeof(mutationMarkers));
-    nextMarker = prototype->nextMarker;
 
     color = prototype->color;
 
@@ -29,8 +26,7 @@ Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, E
 
 
 Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::Bot) {
-
-    RandomizeMarkers();
+    isAlive = true;
 
     energy = Energy;
     stunned = StunAfterBirth;
@@ -68,16 +64,6 @@ void Bot::CalculateLookAt()
     lookAt_y = lookAt.y;
 }
 
-
-void Bot::RandomizeMarkers()
-{
-    for (uint i = 0; i < NumberOfMutationMarkers; ++i)
-    {
-        mutationMarkers[i] = rand();
-    }
-    nextMarker = 0;
-}
-
 Color Bot::GetRandomColor() {
     Color toRet;
     toRet.SetRandom();
@@ -108,7 +94,7 @@ BrainInput Bot::FillBrainInput() {
     }
     else
     {
-        Object* tmpDest = World::INSTANCE()->allCells[lookAt_x][lookAt_y];
+        Object* tmpDest = World::INSTANCE()->worldEntityMap[lookAt_x][lookAt_y];
 
         //Destination cell is empty
         if (!tmpDest)
@@ -124,9 +110,6 @@ BrainInput Bot::FillBrainInput() {
             case EnumObjectType::Bot:
                 //0.5 if someone is in that cell
                 input.vision = 1.0f;
-
-                //Calculate how close they are as relatives, based on mutation markers
-                input.vision += (1.0f - (FindKinship((Bot*)tmpDest) * 1.0f) / (NumberOfMutationMarkers * 1.0f));
                 break;
             }
         }
@@ -237,11 +220,11 @@ void Bot::tick() {
     energy -= EveryTickEnergyPenalty;
 
     if (ArtificialSelectionWatcher_OnTick())
-        //return 1;
+        isAlive = false;
         return;
 
     if (((energy) <= 0) || (lifetime >= MaxBotLifetime))
-        //return 1;
+        isAlive = false;
         return;
 
     BrainOutput tmpOut;
@@ -257,7 +240,6 @@ void Bot::tick() {
     //Bot brain does its stuff
     tmpOut = think(input);
     
-    //return 0;
     return;
 }
 
@@ -299,13 +281,6 @@ int Bot::GetEnergyFromKills()
 {
     return energyFromPredation;
 }
-
-
-int* Bot::GetMarkers()
-{
-    return mutationMarkers;
-}
-
 
 
 bool Bot::TakeEnergy(int val)
@@ -361,23 +336,6 @@ Bot::summary_return Bot::GetNeuronSummary()
     }
 
     return { toRet[0], toRet[1], toRet[2], toRet[3], toRet[4], toRet[5], NumNeuronLayers * NeuronsInLayer };
-}
-
-
-int Bot::FindKinship(Bot* stranger)
-{
-    int numMarkers = 0;
-
-    for (uint i = 0; i < NumberOfMutationMarkers; ++i)
-    {
-        if (mutationMarkers[i] == stranger->mutationMarkers[i])
-            ++numMarkers;
-    }
-
-    if (numMarkers >= (NumberOfMutationMarkers - HowMuchDifferenseCantBeTold))
-        numMarkers = NumberOfMutationMarkers;
-
-    return numMarkers;
 }
 
 void Bot::SetColor(Color newColor) {

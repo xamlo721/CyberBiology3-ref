@@ -8,15 +8,6 @@ class IRenderableObject {
 		//MyTexture rectangle
 		static const Rect image_rect;
 
-		///Я не знаю что это значит, но теперь это флаг для ObjectRenderer
-		bool isShrinkedObject;
-
-		bool hasSprite;
-
-		bool hasImage;
-
-		bool hasColor;
-
 		Color color;
 
 

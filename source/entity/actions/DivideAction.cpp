@@ -2,7 +2,11 @@
 
 #include "../../world/World.h"
 
-void DivideAction::onActivate(Bot* object) {
+void DivideAction::onActivate(Bot* object, CellCluster* cluster) {
+
+    if (!object->isAlive) {
+        return;
+    }
 
     if (ArtificialSelectionWatcher_OnDivide(object)) {
         return;
@@ -15,19 +19,21 @@ void DivideAction::onActivate(Bot* object) {
         } else {
             Point freeSpace;
 
-            freeSpace = World::INSTANCE()->FindFreeNeighbourCell(object->x, object->y);
+            freeSpace = cluster->FindFreeNeighbourCell();
+            freeSpace.x += object->x;
+            freeSpace.y += object->y;
 
             if (freeSpace.x != -1) {
 #ifndef NewbornGetsHalf
                 object->TakeEnergy(EnergyPassedToAChild + GiveBirthCost);
 
                 if ((!RandomPercentX10(World::INSTANCE()->params.adaptation_botShouldBeOnLandOnceToMultiply)) || (object->wasOnLand))
-                    World::INSTANCE()->AddObject(new Bot(freeSpace.x, freeSpace.y, EnergyPassedToAChild, this, RandomPercent(MutationChancePercent)));
+                    World::INSTANCE()->addObject(new Bot(freeSpace.x, freeSpace.y, EnergyPassedToAChild, object, RandomPercent(MutationChancePercent)));
 #else
                 object->TakeEnergy(object->energy / 2 + GiveBirthCost);
 
                 if ((!RandomPercentX10(World::INSTANCE()->params.adaptation_botShouldBeOnLandOnceToMultiply)) || (object->wasOnLand))
-                    World::INSTANCE()->AddObject(new Bot(freeSpace.x, freeSpace.y, object->energy, object, RandomPercent(MutationChancePercent)));
+                    World::INSTANCE()->addObject(new Bot(freeSpace.x, freeSpace.y, object->energy, object, RandomPercent(MutationChancePercent)));
 #endif
 
                 return;
@@ -36,7 +42,7 @@ void DivideAction::onActivate(Bot* object) {
     //}
 
     if (object->energy <= 0) {
-        //return 1;
+        object->isAlive = false;
         return;
     }
 

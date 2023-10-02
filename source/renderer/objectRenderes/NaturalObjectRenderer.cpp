@@ -12,13 +12,7 @@ void NaturalObjectRenderer::draw(Object* gameObject) {
     Color c = gameObject->GetColor();
 
 
-    SDL_Rect object_rect;
-    if (gameObject->isShrinkedObject) {
-        object_rect = RenderUtils::CalcObjectRectShrinked(gameObject, 1);
-    }
-    else {
-        object_rect = RenderUtils::CalcObjectRect(gameObject);
-    }
+    SDL_Rect object_rect = RenderUtils::CalcObjectRect(gameObject);
 
     //В конечном итоге мы должны его здесь формализовать и убрать зависимость от EnumObjectType
 

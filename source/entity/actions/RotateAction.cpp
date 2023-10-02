@@ -1,17 +1,20 @@
 #include "RotateAction.h"
 
 
-void RotateAction::onActivate(Bot* object) {
+void RotateAction::onActivate(Bot* object, CellCluster* cluster) {
 
+    if (!object->isAlive) {
+        return;
+    }
 
     //If dies of low energy
     if (object->TakeEnergy(RotateCost)) {
-        //return 1;
+        object->isAlive = false;
         return;
     }
     
-    //int direction = (tmpOut.desired_rotation * 10.0f);
-    int direction = (object->direction * 10.0f);
+    int direction = (object->tmpOut.desired_rotation * 10.0f);
+    //int direction = (object->direction * 10.0f);
 
     direction = direction % 8;
 

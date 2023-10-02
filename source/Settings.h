@@ -156,7 +156,7 @@
 
 //#define SpawnOneAtStart
 //#define SpawnControlGroupAtStart
-#define ControlGroupSize 8000
+#define ControlGroupSize 10
 
 //-----------------------------------------------------------------
 
@@ -175,10 +175,10 @@
 #define NewbornGetsHalf
 #define EnergyPassedToAChild 100
 
-#define EveryTickEnergyPenalty 0
+#define EveryTickEnergyPenalty 1
 #define AttackCost 4
-#define MoveCost 1
-#define RotateCost 0
+#define MoveCost 2
+#define RotateCost 1
 #define GiveBirthCost 10
 
 #define StunAfterBirth 1	//How many turns a creature cannot act after his birth
@@ -198,9 +198,6 @@
 
 //#define UseSeasons
 #define ChangeSeasonInterval 4000
-
-#define NumberOfMutationMarkers 3
-#define HowMuchDifferenseCantBeTold 1
 
 //#define BotDiesIfEnergyOverflow
 

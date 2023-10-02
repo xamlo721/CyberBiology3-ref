@@ -10,8 +10,9 @@
 #include "../logic/ITickable.h"
 
 #include "Cell.h"
+#include "CellCluster.h"
 
-#include <map>
+#include <list>
 
 
 class World {
@@ -19,18 +20,37 @@ class World {
     private:
         static World* instance;
 
-        //Игровое поле
-        static Cell worldMap[FieldCellsWidth][FieldCellsHeight];
-        //То же самое игровое поле, только с объектами на нём
-        static ITickable * worldEntityMap[FieldCellsWidth][FieldCellsHeight];
 
-        //Список объектов ожидающих обновления
-        static std::map<Uint32, ITickable *> entityes;
 
-        //Список обновленных объектов
-        static std::map<Uint32, ITickable *> tempEntityes;
+        // !!!!!!!!!!!WARNING!!!!!!!!!!!
+        // 
+        // Очень важный атомарный флаг - Необходим для предотвращения 
+        // коллезий при разметке блокировок кластеров
+        // Перед тем как заблокировать кластер, необходимо заблокировать мир
+        // Иначе во время коллизий кластеров может случиться dead-lock 
+        // 
+        // !!!!!!!!!!!WARNING!!!!!!!!!!!
+        abool isLocked = false;
+
+
+        //Needed to calculate number of active objects and bots (calculated on every frame)
+        uint objectsTotal = 0;
+        uint botsTotal = 0;
 
     public:
+        //Игровое поле
+        Cell worldMap[FieldCellsWidth][FieldCellsHeight];
+        //То же самое игровое поле, только с объектами на нём
+        Object* worldEntityMap[FieldCellsWidth][FieldCellsHeight];
+
+        //Список объектов ожидающих обновления
+        //static std::list<ITickable*> entityes;
+        std::list<Object*> entityes;
+
+        //Список обновленных объектов
+        //static std::list<ITickable*> tempEntityes;
+        std::list<Object*> tempEntityes;
+
         static World* INSTANCE() {
             if (instance == 0) {
                 instance = new World();
@@ -38,42 +58,48 @@ class World {
             return instance;
         }
 
+        static void lock() {
+
+            while (instance->isLocked) {
+                std::this_thread::yield();
+            }
+            instance->isLocked = true;
+
+        }
+
+        static void unlock() {
+            instance->isLocked = false;
+        }
+
 	public:
-        static int seed;
+        static uint seed;
 
 		EnumSeason::Season season;
 
-        //Needed to calculate number of active objects and bots (calculated on every frame)
-        uint objectsTotal = 0;
-        uint botsTotal = 0;
-
         int photosynthesisReward = FoodbaseInitial;
-
-        //All cells as 2d array
-        Object* allCells[FieldCellsWidth][FieldCellsHeight];
-
-
         FieldDynamicParams params;
 
         World();
 
+        void generateWorldBorder();
+
+
+        //thread-safetly
+        bool addObject(Object* obj);
 
         //Remove object and delete object class
-        void RemoveObject(int X, int Y);
+        //thread-safetly
+        void removeObject(int X, int Y);
         void RemoveAllObjects();
 
-        //Remove a Bot (same as remove object but for a Bot)
-        void RemoveBot(int X, int Y, int energyVal = 0);
+        //thread-safetly
+        bool moveObject(Object* obj, int toX, int toY);
 
-        //Repaint Bot
-        void RepaintBot(Bot* b, Color newColor, int differs = 1);
+        CellCluster* getObjectsArround(Object * obj);
 
-        //Move objects from one cell to another
-        int MoveObject(int fromX, int fromY, int toX, int toY);
-        int MoveObject(Object* obj, int toX, int toY);
 
-        bool AddObject(Object* obj);
 
+        //Service
 
         //Is cell out if bounds?
         bool IsInBounds(int X, int Y);
@@ -84,10 +110,6 @@ class World {
 
         Object* GetObjectLocalCoords(int X, int Y);
 
-        //Find empty cell nearby, otherwise return {-1, -1}
-        Point FindFreeNeighbourCell(int X, int Y);
-
-        Point FindRandomNeighbourBot(int X, int Y);
 
 
         //How many objects on field, prev. frame

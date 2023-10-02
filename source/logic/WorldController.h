@@ -49,6 +49,9 @@ class WorldController {
         //Spawn group of random bots
         void SpawnControlGroup();
 
+
+
+
         void PauseThreads();
         void UnpauseThreads();
 
@@ -60,9 +63,6 @@ class WorldController {
         void ProcessPart_MultipleThreads(const uint X1, const uint Y1, const uint X2, const uint Y2, const uint index);
 
         void ProcessPart_AlternativeMultipleThreads(const uint X1, const uint Y1, const uint X2, const uint Y2, const uint index);
-
-
-
 
         //Start all threads
         void StartThreads();

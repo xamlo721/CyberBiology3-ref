@@ -7,7 +7,6 @@
 #include "../logic/BotNeuralNet.h"
 
 #include "../logic/EnumEnergySource.h"
-#include "../logic/ITickable.h"
 
 
 //Rotations array, contains where a Bot would look with every
@@ -55,7 +54,7 @@ const Uint8 presetColors[][4] =
 
 
 
-class Bot final: public Object , public ITickable {
+class Bot final: public Object {
 
     public:
 
@@ -68,6 +67,9 @@ class Bot final: public Object , public ITickable {
         int lookAt_x, lookAt_y;
 
         void CalculateLookAt();
+
+        //Маркер удаления
+        bool isAlive;
 
 
         //Active brain - one that is used during simulation, may be changed or optimized
@@ -87,11 +89,6 @@ class Bot final: public Object , public ITickable {
         int energyFromPredation = 0;
         int energyFromOrganics = 0;
 
-        //Mutation markers used to decide how close two bots are to each other as relatives
-        int mutationMarkers[NumberOfMutationMarkers];
-        uint nextMarker;
-
-        void RandomizeMarkers();
         void RandomizeColor();
         void RandomDirection();
 
@@ -162,8 +159,6 @@ class Bot final: public Object , public ITickable {
         int GetEnergyFromPS();
         int GetEnergyFromKills();
 
-        int* GetMarkers();
-
         BotNeuralNet* GetActiveBrain();
         BotNeuralNet* GetInitialBrain();
 
@@ -171,10 +166,6 @@ class Bot final: public Object , public ITickable {
         bool TakeEnergy(int val);
 
         summary_return GetNeuronSummary();
-
-        /*Find out how close these two are as relatives,
-        returns number of matching mutation markers*/
-        int FindKinship(Bot* stranger);
 
         void SetColor(Color);
         void SetColor(Uint8, Uint8, Uint8);

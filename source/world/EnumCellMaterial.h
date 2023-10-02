@@ -1,9 +1,12 @@
 #pragma once
+
+#include "../MyTypes.h"
+
 class EnumCellMaterial {
 
 	public:
 
-		enum CellMaterial {
+		enum CellMaterial : Uint8 {
 
 			common,
 

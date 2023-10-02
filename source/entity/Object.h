@@ -4,12 +4,14 @@
 #include "../Settings.h"
 #include "../MyTypes.h"
 #include "../renderer/IRenderableObject.h"
+#include "../logic/ITickable.h"
+
 #include "EnumObjectType.h"
 
 
 //Base class for any object on field
 //TODO: Он не должен быть наследован оттуда
-class Object : public virtual IRenderableObject {
+class Object : public virtual IRenderableObject, public ITickable {
 
 	public: //protected:
 
@@ -37,6 +39,7 @@ class Object : public virtual IRenderableObject {
 
 		virtual Color GetColor() override;
 
+		virtual void tick() override {}; //ITickable
 
 
 };

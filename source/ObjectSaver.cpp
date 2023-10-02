@@ -11,9 +11,6 @@ Bot* ObjectSaver::LoadBotFromFile(MyInputStream& file)
 {
     int lifetime = file.ReadInt();
 
-    if (file.ReadInt() != NumberOfMutationMarkers)
-        return NULL;
-
     if (file.ReadInt() != NumNeuronLayers)
         return NULL;
     if (file.ReadInt() != NeuronsInLayer)
@@ -26,11 +23,6 @@ Bot* ObjectSaver::LoadBotFromFile(MyInputStream& file)
     toRet->SetLifetime(lifetime);
 
     toRet->SetColor( file.ReadInt(), file.ReadInt(), file.ReadInt() );
-
-    repeat(NumberOfMutationMarkers)
-    {
-        toRet->GetMarkers()[i] = file.ReadInt();
-    }
 
     toRet->energy = file.ReadInt();
 
@@ -107,7 +99,7 @@ ObjectSaver::WorldParams ObjectSaver::LoadWorld(World* world, char* filename)
                     tmpObj->x = x;
                     tmpObj->y = y;
 
-                    world->AddObject(tmpObj);
+                    world->addObject(tmpObj);
                 }
             }
         }
@@ -184,8 +176,6 @@ void ObjectSaver::WriteBotToFile(MyOutStream& file, Bot* obj)
     file.WriteInt(obj->type);
     file.WriteInt(obj->GetLifetime());
 
-    file.WriteInt(NumberOfMutationMarkers);
-
     file.WriteInt(NumNeuronLayers);
     file.WriteInt(NeuronsInLayer);
     file.WriteInt(sizeof(Neuron));
@@ -193,11 +183,6 @@ void ObjectSaver::WriteBotToFile(MyOutStream& file, Bot* obj)
     file.WriteInt((obj)->GetColor().r);
     file.WriteInt((obj)->GetColor().g);
     file.WriteInt((obj)->GetColor().b);
-
-    repeat(NumberOfMutationMarkers)
-    {
-        file.WriteInt((obj)->GetMarkers()[i]);
-    }
 
     file.WriteInt((obj)->energy);
 

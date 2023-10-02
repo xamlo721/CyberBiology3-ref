@@ -1,12 +1,16 @@
 #pragma once
 
+#include "../MyTypes.h"
+
 class EnumObjectType {
 
 	public:
 
-		enum ObjectTypes {
+		enum ObjectTypes : Uint8 {
 
 			Empty,
+
+			WorldBorder,
 			
 			Bot
 

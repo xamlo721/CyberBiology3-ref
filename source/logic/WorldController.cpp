@@ -11,6 +11,7 @@
 WorldController* WorldController::instance = 0;
 
 WorldController::WorldController() {
+
     //Start threads
     for (int i = 0; i < NumThreads; i++) {
         threadGoMarker[i] = false;
@@ -19,124 +20,110 @@ WorldController::WorldController() {
         const uint yCoord = 0;
         const uint areaWidth = (FieldCellsWidth / NumThreads) * (i + 1);
         const uint areaHeight = FieldCellsHeight;
-        threads[0] = new std::thread(&WorldController::ProcessPart_AlternativeMultipleThreads, this, xCoord, yCoord, areaWidth, areaHeight, i);
+        //threads[i] = new std::thread(&WorldController::ProcessPart_AlternativeMultipleThreads, this, xCoord, yCoord, areaWidth, areaHeight, i);
     }
 
 }
-
-
-int WorldController::FindHowManyFreeCellsAround(int X, int Y)
-{
-    int toRet = 0;
-
-    //If cell itself is empty
-    if (gameWorld->allCells[X][Y] == NULL) {
-        ++toRet;
-    }
-
-    //Parse all cells
-    int tx;
-
-    for (int cx = -1; cx < 2; ++cx)
-    {
-        for (int cy = -1; cy < 2; ++cy)
-        {
-
-            tx = gameWorld->ValidateX(X + cx);
-
-            if (gameWorld->IsInBounds(tx, Y + cy))
-            {
-                if (gameWorld->allCells[tx][Y + cy] == NULL)
-                {
-                    ++toRet;
-                }
-            }
-        }
-    }
-
-    return toRet;
-}
-
-
 
 void WorldController::ObjectTick(Object* tmpObj) {
     
-    //TODO: Lock 3x3 
+    CellCluster* cluster = this->gameWorld->getObjectsArround(tmpObj);
+    //1) 
+    World::lock();
+    //2)
+    cluster->lock();
+    //3)
+    World::unlock();
 
-    //TODO: remove dead object
+    {
+        /*This function returns 1 when the object is destroyed. OUTDATED!!!!!!
+         You should call it on every simulation tick before you
+         call same function in derived class
+         Returns:
+         0 - all fine
+         1 - object destroyed
+         2 - nothing to do(last tick frame matches current frame)*/
 
-        //Object destroyed
-        //if (tmpObj->type == EnumObjectType::Bot)
-        //    gameWorld->RemoveBot(tmpObj->x, tmpObj->y, tmpObj->energy);
-        //else
-        //    gameWorld->RemoveObject(tmpObj->x, tmpObj->y);
+         //Object destroyed
+        if (!((Bot*)tmpObj)->isAlive) {
 
-        //return;
+            gameWorld->removeObject(tmpObj->x, tmpObj->y);
 
-     ((Bot*)tmpObj)->tick();
-     BrainOutput actions = ((Bot*)tmpObj)->tmpOut;
+            return;
+        }
 
-
-     //TODO: Сделать правила для вызова Actions и перевести их на автомат
+        ((Bot*)tmpObj)->tick();
+        BrainOutput actions = ((Bot*)tmpObj)->tmpOut;
 
 
-     //Multiply first
-     if (actions.divide > 0) {
-         //FIXME: Этот дурдом с созданием объектов решается статическим списком Action в классе бота
-         DivideAction action;
-         action.onActivate(((Bot*)tmpObj));
+        //TODO: Сделать правила для вызова Actions и перевести их на автомат
 
-     }
 
-     //Then attack
-     if (actions.attack > 0) {
-         AttackAction action;
-         action.onActivate(((Bot*)tmpObj));
+        //Multiply first
+        if (actions.divide > 0) {
+            //FIXME: Этот дурдом с созданием объектов решается статическим списком Action в классе бота
+            DivideAction action;
+            action.onActivate(((Bot*)tmpObj), cluster);
 
-     } else {
+        }
 
-         //Rotate after
-         if (actions.desired_rotation != (((Bot*)tmpObj)->direction * .1f)) {
-             RotateAction action;
-             action.onActivate(((Bot*)tmpObj));
-         }
+        //Then attack
+        if (actions.attack > 0) {
+            AttackAction action;
+            action.onActivate(((Bot*)tmpObj), cluster);
 
-         //Move
-         if (actions.move > 0) {
-             MoveAction action;
-             action.onActivate(((Bot*)tmpObj));
-         }
-         //Photosynthesis
-         else if (actions.photosynthesis > 0) {
-             PhotosintesisAction action;
-             action.onActivate(((Bot*)tmpObj));
-         }
+        }
+        else {
 
-     }
+            //Rotate after
+            if (actions.desired_rotation != (((Bot*)tmpObj)->direction * .1f)) {
+                RotateAction action;
+                action.onActivate(((Bot*)tmpObj), cluster);
+            }
 
+            //Move
+            if (actions.move > 0) {
+                MoveAction action;
+                action.onActivate(((Bot*)tmpObj), cluster);
+            }
+            //Photosynthesis
+            else if (actions.photosynthesis > 0) {
+                PhotosintesisAction action;
+                action.onActivate(((Bot*)tmpObj), cluster);
+            }
+
+        }
+    }
+     cluster->unlock();
+     delete cluster;
 
 }
 
 //tick function for single threaded build
-inline void WorldController::tick_single_thread()
-{
+inline void WorldController::tick_single_thread() {
+
+
+    //for (Object* object : World::INSTANCE()->entityes) {
+
+    //    Object* tmpObj = (Object* ) object;
+
+    //    ObjectTick(tmpObj);//unsafe cast!
+
+    //    gameWorld->tempEntityes.push_back(object);
+
+    //}
     Object* tmpObj;
-
-    gameWorld->objectsTotal = 0;
-    gameWorld->botsTotal = 0;
-
     for (uint ix = 0; ix < FieldCellsWidth; ++ix)
     {
         for (uint iy = 0; iy < FieldCellsHeight; ++iy)
         {
-            tmpObj = gameWorld->allCells[ix][iy];
+            tmpObj = gameWorld->worldEntityMap[ix][iy];
 
-            if (tmpObj)
-            {
-                ++gameWorld->objectsTotal;
+            if (tmpObj) {
+                //++gameWorld->objectsTotal;
 
-                if (tmpObj->type == EnumObjectType::Bot)
-                    ++gameWorld->botsTotal;
+                //if (tmpObj->type == EnumObjectType::Bot)
+                //    ++gameWorld->botsTotal;
 
                 ObjectTick(tmpObj);
             }
@@ -197,62 +184,63 @@ void WorldController::waitAllThreads()
 }
 
 //Multithreaded tick function
-inline void WorldController::tick_multiple_threads()
-{
-    auto clear_counters = [&]()
-        {
-            repeat(NumThreads)
-            {
-                counters[i][0] = 0;
-                counters[i][1] = 0;
-                counters[i][2] = 0;
-                counters[i][3] = 0;
-            }
-        };
+inline void WorldController::tick_multiple_threads() {
 
-    gameWorld->objectsTotal = 0;
-    gameWorld->botsTotal = 0;
+    //auto clear_counters = [&]()
+    //    {
+    //        repeat(NumThreads)
+    //        {
+    //            counters[i][0] = 0;
+    //            counters[i][1] = 0;
+    //            counters[i][2] = 0;
+    //            counters[i][3] = 0;
+    //        }
+    //    };
 
-    auto addToCounters = [&]()
-        {
-            repeat(NumThreads)
-            {
-                gameWorld->objectsTotal += counters[i][0];
-                gameWorld->botsTotal += counters[i][1];
-            }
-        };
+    //gameWorld->objectsTotal = 0;
+    //gameWorld->botsTotal = 0;
 
-    //Clear object counters
-    clear_counters();
+    //auto addToCounters = [&]()
+    //    {
+    //        repeat(NumThreads)
+    //        {
+    //            gameWorld->objectsTotal += counters[i][0];
+    //            gameWorld->botsTotal += counters[i][1];
+    //        }
+    //    };
 
-    //Starting signal for all threads
-    StartThreads();
+    ////Clear object counters
+    //clear_counters();
 
-    //Wait for threads to synchronize first time
-    waitAllThreads();
+    ////Starting signal for all threads
+    //StartThreads();
 
-    //Add object counters
-    addToCounters();
+    ////Wait for threads to synchronize first time
+    //waitAllThreads();
 
-    //Clear object counters
-    clear_counters();
+    ////Add object counters
+    //addToCounters();
 
-    //Starting signal for all threads
-    StartThreads();
+    ////Clear object counters
+    //clear_counters();
 
-    //Wait for threads to synchronize second time
-    waitAllThreads();
+    ////Starting signal for all threads
+    //StartThreads();
 
-    //Add object counters
-    addToCounters();
+    ////Wait for threads to synchronize second time
+    //waitAllThreads();
+
+    ////Add object counters
+    //addToCounters();
 
 }
 
 //Tick function
-void WorldController::tick(uint thisFrame)
-{
+void WorldController::tick(uint thisFrame) {
     tick_single_thread();
-    //tick_multiple_threads();
+
+    gameWorld->entityes = gameWorld->tempEntityes;
+    gameWorld->tempEntityes.clear();
 }
 
 
@@ -266,108 +254,13 @@ void WorldController::UnpauseThreads()
     pauseThreads = false;
 }
 
-
-
-//Process function for 4 or 8 threaded simulation
-void WorldController::ProcessPart_AlternativeMultipleThreads(const uint X1, const uint Y1, const uint X2, const uint Y2, const uint index) {
-
-    srand(gameWorld->seed + index);
-    auto obj_cals = [&](Object* tmpObj) {
-        if (tmpObj == NULL) {
-            return;
-
-        }
-
-        ++counters[index][0];
-
-        if (tmpObj->type == EnumObjectType::Bot)
-            ++counters[index][1];
-
-        ObjectTick(tmpObj);
-    };
-
-    for (;;) {
-
-        ThreadWait(index);
-
-        for (int X = X1; X < X1 + ((X2 - X1) / 2); ++X) {
-            for (int Y = Y1; Y < Y2; ++Y) {
-                obj_cals(gameWorld->allCells[X][Y]);
-            }
-        }
-
-        threadGoMarker[index] = false;
-        ThreadWait(index);
-        for (int X = X1 + ((X2 - X1) / 2); X < X2; ++X) {
-            for (int Y = Y1; Y < Y2; ++Y) {
-                obj_cals(gameWorld->allCells[X][Y]);
-            }
-        }
-
-        threadGoMarker[index] = false;
-
-        if (terminateThreads) {
-            threadTerminated[index] = true;
-            return;
-        }
-
-    }
-
-}
-
-//Process function for 4 or 8 threaded simulation
-void WorldController::ProcessPart_MultipleThreads(const uint X1, const uint Y1, const uint X2, const uint Y2, const uint index) {
-
-    srand(gameWorld->seed + index);
-    auto obj_cals = [&](Object* tmpObj) {
-        if (tmpObj == NULL) {
-            return;
-
-        }
-
-        ++counters[index][0];
-
-        if (tmpObj->type == EnumObjectType::Bot)
-            ++counters[index][1];
-
-        ObjectTick(tmpObj);
-    };
-
-    for (;;) {
-        ThreadWait(index);
-        for (int X = X1; X < X1 + ((X2 - X1) / 2); ++X) {
-            for (int Y = Y1; Y < Y2; ++Y) {
-                obj_cals(gameWorld->allCells[X][Y]);
-            }
-        }
-
-        threadGoMarker[index] = false;
-        ThreadWait(index);
-        for (int X = X1 + ((X2 - X1) / 2); X < X2; ++X) {
-            for (int Y = Y1; Y < Y2; ++Y) {
-                obj_cals(gameWorld->allCells[X][Y]);
-            }
-        }
-
-        threadGoMarker[index] = false;
-
-        if (terminateThreads) {
-            threadTerminated[index] = true;
-            return;
-        }
-
-    }
-
-}
-
-
 void WorldController::SpawnControlGroup()
 {
     for (int i = 0; i < ControlGroupSize; ++i)
     {
-        Bot* tmpBot = new Bot(RandomVal(FieldCellsWidth), RandomVal(FieldCellsHeight), MaxPossibleEnergyForABot);
+        Bot* tmpBot = new Bot(RandomVal(FieldCellsWidth-2), RandomVal(FieldCellsHeight), MaxPossibleEnergyForABot);
 
-        if (!gameWorld->AddObject(tmpBot))
+        if (!gameWorld->addObject(tmpBot))
             delete tmpBot;
     }
 }

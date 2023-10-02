@@ -2,12 +2,16 @@
 
 #include "../../world/World.h"
 
-void PhotosintesisAction::onActivate(Bot* object) {
+void PhotosintesisAction::onActivate(Bot* object, CellCluster* cluster) {
+
+    if (!object->isAlive) {
+        return;
+    }
 
     //Above water
     if (!World::INSTANCE()->IsInWater(object->y)) {
 
-        int toGive;
+        int toGive = PhotosynthesisReward_Summer;
 
         //Give energy depending on a season
         switch (World::INSTANCE()->season) {

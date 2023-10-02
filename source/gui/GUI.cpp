@@ -4,6 +4,7 @@
 #include "../Simulation.h"
 #include "../logic/SimulationTimer.h"
 #include "../renderer/ObjectRenderer.h"
+#include "../world/World.h"
 
 
 #include "../renderer/objectRenderes/IObjectRenderer.h"
@@ -193,10 +194,6 @@ void ApplicationGUIManager::DrawSelectionWindow()
 				ImGui::TextColored(ImVec4(((c[0] * 1.0f) / 255.0f), ((c[1] * 1.0f) / 255.0f), ((c[2] * 1.0f) / 255.0f), 1.0f), "*****");
 
 				ImGui::SameLine();
-				if (ImGui::Button("Repaint", { 50, 20 }))
-				{
-					Simulation::INSTANCE()->worldController->gameWorld->RepaintBot((Bot*)Simulation::INSTANCE()->selectedObject, Bot::GetRandomColor(), 1);
-				}
 
 				if (ImGui::Button("Show brain", { 100, 25 }))
 				{
@@ -481,7 +478,7 @@ void ApplicationGUIManager::DrawDangerousWindow()
 							continue;
 
 						if (o->type == EnumObjectType::Bot)
-							Simulation::INSTANCE()->worldController->gameWorld->RemoveObject(cx, cy);
+							Simulation::INSTANCE()->worldController->gameWorld->removeObject(cx, cy);
 					}
 				}
 			}
@@ -806,7 +803,7 @@ void ApplicationGUIManager::MouseClick()
 					for (int cy = -Simulation::INSTANCE()->brushSize; cy < Simulation::INSTANCE()->brushSize + 1; ++cy)
 					{
 						if (Simulation::INSTANCE()->worldController->gameWorld->IsInBounds(fieldCoords.x + cx, fieldCoords.y + cy))
-							Simulation::INSTANCE()->worldController->gameWorld->RemoveObject(fieldCoords.x + cx, fieldCoords.y + cy);
+							Simulation::INSTANCE()->worldController->gameWorld->removeObject(fieldCoords.x + cx, fieldCoords.y + cy);
 					}
 				}
 			}
@@ -825,7 +822,7 @@ void ApplicationGUIManager::MouseClick()
 							obj->y = fieldCoords.y;
 							obj->energy = MaxPossibleEnergyForABot;
 
-							if (Simulation::INSTANCE()->worldController->gameWorld->AddObject(obj))
+							if (Simulation::INSTANCE()->worldController->gameWorld->addObject(obj))
 							{
 								Simulation::INSTANCE()->LogPrint("Object loaded\r\n");
 							}
@@ -898,9 +895,11 @@ void ApplicationGUIManager::Render()
 			return;
 		}
 
+		//Object* objects[FieldCellsWidth][FieldCellsHeight];
 
+		//objects = *(void*)&World::worldEntityMap;
 
-		ObjectRenderer::drawObjects(World::INSTANCE()->allCells, worker);
+		ObjectRenderer::drawObjects(nullptr, worker);
 
 		//Highlight selected object
 		HighlightSelection();

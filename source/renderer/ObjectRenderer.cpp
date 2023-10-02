@@ -3,9 +3,11 @@
 #include "../entity/EnumObjectType.h"
 #include "../SDL.h"
 #include "../renderer/WorldRenderer.h"
+#include "../world/World.h"
 
 void ObjectRenderer::drawObjects(Object* allCells[FieldCellsWidth][FieldCellsHeight], IObjectRenderer * worker) {
 
+    //World::worldEntityMap;
     //Objects
     Object* tmpObj;
     int ix = WorldRenderer::renderX;
@@ -18,7 +20,7 @@ void ObjectRenderer::drawObjects(Object* allCells[FieldCellsWidth][FieldCellsHei
                 ix -= FieldCellsWidth;
             }
 
-            tmpObj = allCells[ix][iy];
+            tmpObj = World::INSTANCE()->worldEntityMap[ix][iy];
 
             drawOne(tmpObj, worker);
 

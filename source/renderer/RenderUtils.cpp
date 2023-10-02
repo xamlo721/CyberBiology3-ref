@@ -26,14 +26,4 @@ SDL_Rect RenderUtils::CalcObjectRect(Object* gameObject) {
     };
 }
 
-SDL_Rect RenderUtils::CalcObjectRectShrinked(Object* gameObject, int shrink) {
-
-    return SDL_Rect{
-        FieldX + gameObject->screenX * FieldCellSize + shrink,
-        FieldY + gameObject->y * FieldCellSize + shrink,
-        FieldCellSize - 2 * shrink,
-        FieldCellSize - 2 * shrink
-    };
-}
-
 

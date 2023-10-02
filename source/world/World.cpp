@@ -1,6 +1,6 @@
 #include "World.h"
 
-int World::seed;
+uint World::seed;
 
 //SINGLETON
 World* World::instance = 0;
@@ -8,198 +8,236 @@ World* World::instance = 0;
 World::World() {
 
     //Clear array
-    memset(allCells, 0, sizeof(Point*) * FieldCellsWidth * FieldCellsHeight);
+    memset(worldEntityMap, NULL, sizeof(Cell*) * FieldCellsWidth * FieldCellsHeight);
 
+    this->generateWorldBorder();
+}
 
+void World::generateWorldBorder() {
 
-        //Spawn objects
-    #ifdef SpawnControlGroupAtStart
-        SpawnControlGroup();
-    #endif
+    //Горизонтальные стены
+    for (int i = 0; i < FieldCellsWidth; i++) {
+        worldMap[i][0].objectType = EnumObjectType::WorldBorder;
+        worldMap[i][FieldCellsHeight - 1].objectType = EnumObjectType::WorldBorder;
+    }
 
-    #ifdef SpawnOneAtStart
-        Bot* tmpBot = new Bot(80, 60, MaxPossibleEnergyForABot);
-
-        AddObject(tmpBot);
-    #endif
-
-        //Object::SetPointers((Object***)allCells);
-
+    //Вертикальные стены 
+    for (int i = 0; i < FieldCellsHeight; i++) {
+        worldMap[0][i].objectType = EnumObjectType::WorldBorder;
+        worldMap[FieldCellsWidth - 1][i].objectType = EnumObjectType::WorldBorder;
+    }
 }
 
 
-Point World::FindFreeNeighbourCell(int X, int Y)
-{
-    //If this cell is empty
-    if (allCells[X][Y] == NULL) {
-        return { X,Y };
+bool World::addObject(Object* obj) {
+
+    //World thread sync
+    while (isLocked) {
+        std::this_thread::yield();
+    } 
+
+    //1) WORLD LOCK
+    isLocked = true;
+
+    //Cell thread sync
+    while (worldMap[obj->x][obj->y].isLocked) {
+        std::this_thread::yield();
     }
 
-    //Form an array of nearby free cells
+    //2) CELL LOCK
+    worldMap[obj->x][obj->y].isLocked = true;
 
-    int tx;
-    Point tmpArray[9];
-    int i = 0;
+    //3) World UNLOCK
+    isLocked = false;
 
-    for (int cx = -1; cx < 2; ++cx) {
-        for (int cy = -1; cy < 2; ++cy)
-        {
-            tx = ValidateX(X + cx);
+    //Если там занято, о чём речь?
+    if (worldMap[obj->x][obj->y].objectType != EnumObjectType::Empty) {
 
-            if (IsInBounds(tx, Y + cy))
-            {
-                if (allCells[tx][Y + cy] == NULL)
-                {
-                    tmpArray[i++].Set(tx, Y + cy);
-                }
-            }
-        }
-    }
+        worldMap[obj->x][obj->y].isLocked = false;
 
-    //Get random free cell from array
-    if (i > 0)
-    {
-        return tmpArray[RandomVal(i)];
-    }
-
-    //No free cells nearby
-    return { -1, -1 };
-}
-
-
-
-
-
-Point World::FindRandomNeighbourBot(int X, int Y)
-{
-    int tx;
-    Point tmpArray[9];
-    int i = 0;
-
-    for (int cx = -1; cx < 2; ++cx)
-    {
-        for (int cy = -1; cy < 2; ++cy)
-        {
-            tx = ValidateX(X + cx);
-
-            if (IsInBounds(tx, Y + cy))
-            {
-                if (allCells[tx][Y + cy] != NULL)
-                {
-                    if (allCells[tx][Y + cy]->type == EnumObjectType::Bot)
-                        tmpArray[i++].Set(tx, Y + cy);
-                }
-            }
-        }
-    }
-
-    //Get random Bot from array
-    if (i > 0)
-    {
-        return tmpArray[RandomVal(i)];
-    }
-
-    //No free cells nearby
-    return { -1, -1 };
-}
-
-int World::MoveObject(int fromX, int fromY, int toX, int toY)
-{
-    if (!IsInBounds(toX, toY))
-        return -2;
-
-    if (allCells[toX][toY])
-        return -1;
-
-    Object* tmpObj = allCells[fromX][fromY];
-
-    if (tmpObj)
-    {
-        allCells[toX][toY] = tmpObj;
-        allCells[fromX][fromY] = NULL;
-
-        tmpObj->x = toX;
-        tmpObj->y = toY;
-
-        return 0;
-    }
-
-    return -3;
-}
-
-int World::MoveObject(Object* obj, int toX, int toY)
-{
-    return MoveObject(obj->x, obj->y, toX, toY);
-}
-
-
-
-
-
-bool World::AddObject(Object* obj)
-{
-    if (allCells[obj->x][obj->y])
         return false;
+    }
 
-    allCells[obj->x][obj->y] = obj;
+    if (worldMap[obj->x][obj->y].objectType == EnumObjectType::WorldBorder) {
+        return false;
+    }
+
+    //Пометить, что теперь там бот
+    worldMap[obj->x][obj->y].objectType = EnumObjectType::Bot;
+
+    if (obj->type == EnumObjectType::Bot) {
+        worldEntityMap[obj->x][obj->y] = (Bot*)obj; //unsafe cast
+        tempEntityes.push_back((Bot*)obj);
+    }
+
+
+    //4) CELL UNLOCK
+    worldMap[obj->x][obj->y].isLocked = false;
 
     return true;
 }
 
-void World::RemoveObject(int X, int Y)
-{
-    Object* tmpO = allCells[X][Y];
+bool World::moveObject(Object* obj, int toX, int toY) {
 
-    if (tmpO)
-    {
-        delete tmpO;
 
-        allCells[X][Y] = NULL;
+    {//World thread sync
+        while (isLocked) {
+            std::this_thread::yield();
+        }
+
+        //1) WORLD LOCK
+        isLocked = true;
     }
+
+
+
+    if (!IsInBounds(toX, toY)) {
+        isLocked = false;
+        return false;
+    }
+
+    {//Cell thread sync
+        while (worldMap[obj->x][obj->y].isLocked) {
+            std::this_thread::yield();
+        }
+        //2) CELL LOCK
+        worldMap[toX][toY].isLocked = true;
+    }
+
+
+
+    if (worldMap[toX][toY].objectType != EnumObjectType::Empty) {
+        isLocked = false;
+        worldMap[toX][toY].isLocked = false;
+        return false;
+    }
+    
+
+    {//Cell thread sync
+        while (worldMap[obj->x][obj->y].isLocked) {
+            std::this_thread::yield();
+        }
+
+        //2) CELL LOCK
+        worldMap[obj->x][obj->y].isLocked = true;
+    }
+
+
+    //3) World UNLOCK
+    isLocked = false;
+
+    //Processing
+    {
+        Object* tmpObj = worldEntityMap[obj->x][obj->y];
+
+        //Пометить, что теперь там нет бота
+        worldMap[obj->x][obj->y].objectType = EnumObjectType::Empty;
+        worldEntityMap[obj->x][obj->y] = NULL;
+
+        //Пометить, что теперь там бот
+        worldMap[toX][toY].objectType = EnumObjectType::Bot;
+        worldEntityMap[toX][toY] = tmpObj;
+
+        tmpObj->x = toX;
+        tmpObj->y = toY;
+
+    }
+
+    //4) CELL UNLOCK
+    worldMap[obj->x][obj->y].isLocked = false;
+    worldMap[toX][toY].isLocked = false;
+
+    return true;
 }
 
-void World::RemoveAllObjects()
-{
+CellCluster* World::getObjectsArround(Object* obj) {
+
+    {//World thread sync
+        while (isLocked) {
+            std::this_thread::yield();
+        }
+
+        //1) WORLD LOCK
+        isLocked = true;
+    }
+
+    CellCluster* cluster = new CellCluster();
+    //-1 to +1
+    for (int nI = 0, i = - visibleDistance; i <= visibleDistance;  nI++, i++) {
+
+        //-1 to +1
+        for (int nJ = 0, j = - visibleDistance; j <= visibleDistance; nJ++, j++) {
+
+            cluster->area[nI][nJ] = &worldMap[obj->x + i][obj->y + j];
+            cluster->objects[nI][nJ] = worldEntityMap[obj->x + i][obj->y + j];
+
+        }
+
+    }
+
+
+    //3) World UNLOCK
+    isLocked = false;
+
+    return cluster;
+}
+
+
+void World::removeObject(int X, int Y) {
+
+    {//World thread sync
+        while (isLocked) {
+            std::this_thread::yield();
+        }
+
+        //1) WORLD LOCK
+        isLocked = true;
+    }
+
+    {//Cell thread sync
+        while (worldMap[X][Y].isLocked) {
+            std::this_thread::yield();
+        }
+        //2) CELL LOCK
+        worldMap[X][Y].isLocked = true;
+    }
+
+    //3) World UNLOCK
+    isLocked = false;
+
+    {//processing
+
+        if (worldMap[X][Y].objectType != EnumObjectType::Empty) {
+            Object* tmpO = worldEntityMap[X][Y];
+
+            worldMap[X][Y].objectType = EnumObjectType::Empty;
+
+            entityes.remove(tmpO);
+            tempEntityes.remove(tmpO);
+
+            delete tmpO;
+
+            worldEntityMap[X][Y] = NULL;
+        }
+    }
+
+
+    //4) CELL UNLOCK
+    worldMap[X][X].isLocked = false;
+
+}
+
+void World::RemoveAllObjects() {
+
     for (int cx = 0; cx < FieldCellsWidth; ++cx)
     {
         for (int cy = 0; cy < FieldCellsHeight; ++cy)
         {
-            RemoveObject(cx, cy);
+            removeObject(cx, cy);
         }
     }
-}
-
-void World::RemoveBot(int X, int Y, int energyVal)
-{
-    RemoveObject(X, Y);
 
 }
-
-void World::RepaintBot(Bot* b, Color newColor, int differs)
-{
-    Object* tmpObj;
-
-    for (uint ix = 0; ix < FieldCellsWidth; ++ix)
-    {
-        for (uint iy = 0; iy < FieldCellsHeight; ++iy)
-        {
-            tmpObj = allCells[ix][iy];
-
-            if (tmpObj)
-            {
-                if (tmpObj->type == EnumObjectType::Bot)
-                {
-                    if (((Bot*)tmpObj)->FindKinship(b) >= (NumberOfMutationMarkers - differs))
-                    {
-                        ((Bot*)tmpObj)->SetColor(newColor);
-                    }
-                }
-            }
-        }
-
-    }
-}
-
 
 //Is cell out if bounds?
 bool World::IsInBounds(int X, int Y) {
@@ -219,9 +257,8 @@ bool World::IsInMud(int Y) {
 }
 
 
-Object* World::GetObjectLocalCoords(int X, int Y)
-{
-    return allCells[X][Y];
+Object* World::GetObjectLocalCoords(int X, int Y) {
+    return worldEntityMap[X][Y];
 }
 
 
@@ -239,30 +276,32 @@ uint World::GetNumBots() {
 
 
 
-int World::ValidateX(int X)
-{
-    if (X < 0)
-    {
+int World::ValidateX(int X) {
+
+    if (X < 0) {
         return X + FieldCellsWidth;
     }
-    else if (X >= FieldCellsWidth)
-    {
+    
+    if (X >= FieldCellsWidth) {
         return (X - FieldCellsWidth);
     }
 
     return X;
 }
 
+//Что это за штука для gui и почему она тут?
+bool World::ValidateObjectExistance(Object* obj) {
 
-bool World::ValidateObjectExistance(Object* obj)
-{
-    for (uint ix = 0; ix < FieldCellsWidth; ++ix)
-    {
-        for (uint iy = 0; iy < FieldCellsHeight; ++iy)
-        {
-            if (allCells[ix][iy] == obj)
+    for (uint ix = 0; ix < FieldCellsWidth; ++ix) {
+
+        for (uint iy = 0; iy < FieldCellsHeight; ++iy) {
+
+            if (worldEntityMap[ix][iy] == obj) {
                 return true;
+            }
+
         }
+    
     }
 
     return false;
