@@ -18,8 +18,6 @@ Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, E
     //Create active brain
     activeBrain.Clone(&initialBrain);
     activeBrain.Optimize();
-
-    addaptation_lastX = X;
 }
 
 
@@ -40,8 +38,6 @@ Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::Bot) {
 
     //Random direction
     RandomDirection();
-
-    addaptation_lastX = X;
 }
 
 
@@ -164,10 +160,6 @@ void Bot::tick() {
     BrainOutput tmpOut;
 
     CalculateLookAt();
-
-    if (!World::INSTANCE()->IsInWater(y)) {
-        wasOnLand = true;
-    }
 
     //Fill brain input structure
     BrainInput input = FillBrainInput();

@@ -84,20 +84,6 @@ class Bot final: public Object {
         //Create brain input data
         BrainInput FillBrainInput();
 
-        //----------------------------------------------------------------------------------------------
-        //These functions are used for experiments such as adaptation,
-        //you are supposed to call them in tick() function, or do not use
-
-        int adaptation_numTicks = 0;
-        int adaptation_numRightSteps = 0;
-        int addaptation_lastX;
-
-        int adaptationCounter = 0;
-
-        //Bot visited land
-        bool wasOnLand = false;
-
-        //----------------------------------------------------------------------------------------------
         BrainOutput tmpOut;
 
     public:
