@@ -12,7 +12,6 @@
 #include "Cell.h"
 #include "CellCluster.h"
 
-#include <list>
 
 #include "PrivateSyncWorld.h"
 
@@ -120,6 +119,6 @@ class World {
 
 
         //yes, its achitecture mistacke, dont use it.
-        std::list<Object*> getObjectsForRenderer();
+        std::vector<Object*> getObjectsForRenderer();
 };
 

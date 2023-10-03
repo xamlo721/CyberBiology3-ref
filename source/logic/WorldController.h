@@ -11,7 +11,7 @@
 class Object;
 
 //Don't touch
-#define NumThreads 1
+#define NumThreads 32
 
 
 
@@ -37,7 +37,6 @@ class WorldController {
         //threads
         abool threadGoMarker[NumThreads];
         std::thread* threads[NumThreads];
-        uint counters[NumThreads][4];
         abool threadTerminated[NumThreads];
         abool terminateThreads = false;
         abool pauseThreads = false;
@@ -51,35 +50,28 @@ class WorldController {
 
 
 
-
+        //Start all threads
+        void StartThreads();
         void PauseThreads();
         void UnpauseThreads();
-
+        //Wait for all threads to finish their calculations
+        void waitAllThreads();
 
         //tick function for single threaded build
         void tick_single_thread();
 
-        //Start all threads
-        void StartThreads();
-
-        //Wait for all threads to finish their calculations
-        void waitAllThreads();
-
         //Multithreaded tick function
-        inline void tick_multiple_threads();
+        inline void tick_multiple_threads(int threadIndex);
 
-        //Wait for a signal 
-        inline void ThreadWait(const uint index);
+
+
+
 
         //Tick function
         void tick(uint thisFrame);
 
         //Tick function for every object
         void ObjectTick(Object* tmpObj);
-
-        //How may free cells are available around a given one
-        int FindHowManyFreeCellsAround(int X, int Y);
-
 
         //Transform absolute screen coords to cell position on field
         Point ScreenCoordsToLocal(int X, int Y);

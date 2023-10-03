@@ -5,7 +5,7 @@
 #include "../renderer/WorldRenderer.h"
 #include "../world/World.h"
 
-void ObjectRenderer::drawObjects(std::list<Object*> entityes, IObjectRenderer * worker) {
+void ObjectRenderer::drawObjects(std::vector<Object*> entityes, IObjectRenderer * worker) {
 
 
     for (Object* tmpObj : entityes) {

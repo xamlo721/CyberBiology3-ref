@@ -13,16 +13,10 @@ WorldController* WorldController::instance = 0;
 WorldController::WorldController() {
 
     //Start threads
-    //for (int i = 0; i < NumThreads; i++) {
-    //    threadGoMarker[i] = false;
-
-    //    const uint xCoord = 0;
-    //    const uint yCoord = 0;
-    //    const uint areaWidth = (FieldCellsWidth / NumThreads) * (i + 1);
-    //    const uint areaHeight = FieldCellsHeight;
-    //    //threads[i] = new std::thread(&WorldController::ProcessPart_AlternativeMultipleThreads, this, xCoord, yCoord, areaWidth, areaHeight, i);
-    //}
-
+    for (int i = 0; i < NumThreads; i++) {
+        threadGoMarker[i] = false;
+        threads[i] = new std::thread(&WorldController::tick_multiple_threads, this, i);
+    }
 }
 
 void WorldController::ObjectTick(Object* tmpObj) {
@@ -52,6 +46,7 @@ void WorldController::ObjectTick(Object* tmpObj) {
 
          
         ((Bot*)tmpObj)->tick();
+        
         BrainOutput actions = ((Bot*)tmpObj)->tmpOut;
 
 
@@ -116,31 +111,20 @@ void WorldController::tick_single_thread() {
 
 }
 
-//Wait for a signal 
-inline void WorldController::ThreadWait(const uint index)
-{
-    for (;;)
-    {
-        if (threadGoMarker[index])
-            return;
-
-        std::this_thread::yield();
-
-        if (pauseThreads)
-        {
-            //Delay so it would not eat too many resourses while on pause
-            SDL_Delay(1);
-        }
-    }
-}
-
-
 //Start all threads
 void WorldController::StartThreads() {
     repeat(NumThreads)
     {
         threadGoMarker[i] = true;
     }
+}
+
+void WorldController::PauseThreads() {
+    pauseThreads = true;
+}
+
+void WorldController::UnpauseThreads() {
+    pauseThreads = false;
 }
 
 //Wait for all threads to finish their calculations
@@ -155,7 +139,7 @@ void WorldController::waitAllThreads()
 
         repeat(NumThreads)
         {
-            if (threadGoMarker[i] == false)
+            if (threadGoMarker[i] == true)
                 threadsReady++;
         }
 
@@ -168,82 +152,66 @@ void WorldController::waitAllThreads()
 }
 
 //Multithreaded tick function
-inline void WorldController::tick_multiple_threads() {
+inline void WorldController::tick_multiple_threads(int threadIndex) {
 
-    //auto clear_counters = [&]()
-    //    {
-    //        repeat(NumThreads)
-    //        {
-    //            counters[i][0] = 0;
-    //            counters[i][1] = 0;
-    //            counters[i][2] = 0;
-    //            counters[i][3] = 0;
-    //        }
-    //    };
+    waitAllThreads();
 
-    //gameWorld->objectsTotal = 0;
-    //gameWorld->botsTotal = 0;
+    threadGoMarker[threadIndex] = false;
 
-    //auto addToCounters = [&]()
-    //    {
-    //        repeat(NumThreads)
-    //        {
-    //            gameWorld->objectsTotal += counters[i][0];
-    //            gameWorld->botsTotal += counters[i][1];
-    //        }
-    //    };
+    while (gameWorld->hasUnprocessedObject()) {
 
-    ////Clear object counters
-    //clear_counters();
+        Object* tmpObj = gameWorld->getNextUnprocessedObject();
 
-    ////Starting signal for all threads
-    //StartThreads();
+        if (tmpObj) {
 
-    ////Wait for threads to synchronize first time
-    //waitAllThreads();
+            ObjectTick(tmpObj);
+        }
+    }
 
-    ////Add object counters
-    //addToCounters();
-
-    ////Clear object counters
-    //clear_counters();
-
-    ////Starting signal for all threads
-    //StartThreads();
-
-    ////Wait for threads to synchronize second time
-    //waitAllThreads();
-
-    ////Add object counters
-    //addToCounters();
+    threadGoMarker[threadIndex] = true;
+    //Wait for threads to synchronize first time
+    waitAllThreads();
 
 }
 
 //Tick function
 void WorldController::tick(uint thisFrame) {
 
+
     gameWorld->startStep();
 
-    tick_single_thread();
+    StartThreads();
+    {
+        uint threadsReady;
 
+        for (;;)
+        {
+
+            threadsReady = 0;
+
+            repeat(NumThreads)
+            {
+                if (threadGoMarker[i] == true)
+                    threadsReady++;
+            }
+
+            if (threadsReady == NumThreads) {
+                break;
+            }
+
+            std::this_thread::yield();
+
+        }
+    }
     gameWorld->stopStep();
 
 }
 
 
-void WorldController::PauseThreads() {
-    pauseThreads = true;
-}
+void WorldController::SpawnControlGroup() {
 
-void WorldController::UnpauseThreads()
-{
-    pauseThreads = false;
-}
+    for (int i = 0; i < ControlGroupSize; ++i) {
 
-void WorldController::SpawnControlGroup()
-{
-    for (int i = 0; i < ControlGroupSize; ++i)
-    {
         Bot* tmpBot = new Bot(RandomVal(FieldCellsWidth-2), RandomVal(FieldCellsHeight), MaxPossibleEnergyForABot);
 
         if (!gameWorld->addObjectSafetly(tmpBot))
@@ -288,8 +256,7 @@ WorldController::~WorldController() {
 
 
 
-Point WorldController::ScreenCoordsToLocal(int X, int Y)
-{
+Point WorldController::ScreenCoordsToLocal(int X, int Y) {
     X -= FieldX;
     Y -= FieldY;
 

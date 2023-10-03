@@ -12,7 +12,7 @@ class ObjectRenderer {
 
 	public:
 
-		static void drawObjects(std::list<Object*> entityes, IObjectRenderer * worker);
+		static void drawObjects(std::vector<Object*> entityes, IObjectRenderer * worker);
 		
 		static void drawOne(Object* object, IObjectRenderer* worker);
 

@@ -3,6 +3,7 @@
 #include "Cell.h"
 #include "../Settings.h"
 #include "../entity/Object.h"
+#include <vector>
 
 class PrivateSyncWorld {
 
@@ -11,14 +12,17 @@ class PrivateSyncWorld {
 
 
     public:
+
+        std::mutex worldMutex;
+
         //Игровое поле
         Cell worldMap[FieldCellsWidth][FieldCellsHeight];
 
         //Список объектов ожидающих обновления
-        std::list<Object*> entityes;
+        std::vector<Object*> entityes;
 
         //Список обновленных объектов
-        std::list<Object*> tempEntityes;
+        std::vector<Object*> tempEntityes;
 
 
         PrivateSyncWorld();

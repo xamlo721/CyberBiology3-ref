@@ -105,12 +105,12 @@
 #define FieldX InterfaceBorder
 #define FieldY InterfaceBorder
 
-#define FieldCellsWidth 13*16*1		//ƒолжно делитьс€ на 8 без остатка если нужны 4 потока! » на 16 без остатка если 8 потоков!
-#define FieldCellsHeight 133
+#define FieldCellsWidth 13*16*4		//ƒолжно делитьс€ на 8 без остатка если нужны 4 потока! » на 16 без остатка если 8 потоков!
+#define FieldCellsHeight 133*2
 
-#define FieldRenderCellsWidth 202
+#define FieldRenderCellsWidth 202*2
 
-#define FieldCellSize 8
+#define FieldCellSize 4
 #define FieldCellSizeHalf FieldCellSize/2
 #define FieldWidth FieldCellSize*FieldRenderCellsWidth
 #define FieldHeight FieldCellSize*FieldCellsHeight
@@ -156,7 +156,7 @@
 
 //#define SpawnOneAtStart
 //#define SpawnControlGroupAtStart
-#define ControlGroupSize 10
+#define ControlGroupSize 1000
 
 //-----------------------------------------------------------------
 

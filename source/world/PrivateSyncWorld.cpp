@@ -15,15 +15,15 @@ bool PrivateSyncWorld::removeObjectUnsafetly(int globalXCoord, int globalYCoord)
 
     if (worldMap[globalXCoord][globalYCoord].objectType == EnumObjectType::Bot) {
         Object* tmpO = worldMap[globalXCoord][globalYCoord].object;
+        tmpO->isAlive = false;
+        //if (entityes.)
+        //entityes.remove(tmpO);
+        //tempEntityes.remove(tmpO);
 
+        //delete tmpO;
 
-        entityes.remove(tmpO);
-        tempEntityes.remove(tmpO);
-
-        delete tmpO;
-
-        worldMap[globalXCoord][globalYCoord].objectType = EnumObjectType::Empty;
-        worldMap[globalXCoord][globalYCoord].object = NULL;
+        //worldMap[globalXCoord][globalYCoord].objectType = EnumObjectType::Empty;
+        //worldMap[globalXCoord][globalYCoord].object = NULL;
 
         return true;
     }
