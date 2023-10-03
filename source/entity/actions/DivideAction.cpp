@@ -64,13 +64,6 @@ bool DivideAction::ArtificialSelectionWatcher_OnDivide(Bot* object) {
             return true;
     }
 
-    //Force photosynthesis on land
-    if (object->numPSonLand < 4)
-    {
-        if (RandomPercentX10(params.adaptation_botShouldDoPSOnLandOnceToMultiply))
-            return true;
-    }
-
     return false;
 }
 

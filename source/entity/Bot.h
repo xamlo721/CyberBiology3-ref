@@ -11,23 +11,22 @@
 
 //Rotations array, contains where a Bot would look with every
 //position of its head
-const Point Rotations[] =
-{
-    {0,-1},
-    {1,-1},
-    {1,0},
-    {1,1},
-    {0,1},
-    {-1,1},
-    {-1,0},
-    {-1,-1}
+
+const Point Rotations[] = {
+    { 0, -1 },
+    { 1, -1 },
+    { 1,  0 },
+    { 1,  1 },
+    { 0,  1 },
+    { -1, 1 },
+    { -1, 0 },
+    { -1,-1 }
 };
 
 
 
 //Preset colors
-const Uint8 presetColors[][4] =
-{
+const Uint8 presetColors[][4] = {
     {255, 0, 0},
     {0, 255, 0},
     {0, 0, 255},
@@ -80,17 +79,7 @@ class Bot final: public Object {
         //How long a Bot should wait before multiply
         int fertilityDelay;
 
-
-        //Energy acquired from different sources
-        int energyFromPS = 0;
-        int energyFromPredation = 0;
-        int energyFromOrganics = 0;
-
-        void RandomizeColor();
         void RandomDirection();
-
-        //Shift color a little (-10 to +10)
-        void ChangeColor(const int str = 10);
 
         //Create brain input data
         BrainInput FillBrainInput();
@@ -105,15 +94,8 @@ class Bot final: public Object {
 
         int adaptationCounter = 0;
 
-        //How many times Bot used attack, move and PS commands
-        uint numAttacks = 0;
-        uint numMovesY = 0;
-        uint numPSonLand = 0;
-
         //Bot visited land
         bool wasOnLand = false;
-
-        bool ArtificialSelectionWatcher_OnTick();
 
         //----------------------------------------------------------------------------------------------
         BrainOutput tmpOut;
@@ -152,10 +134,6 @@ class Bot final: public Object {
 
         void GiveEnergy(int num, EnumEnergySource::EnergySource src = EnumEnergySource::unknown);
 
-        //Return current energy amount from different sources
-        int GetEnergyFromPS();
-        int GetEnergyFromKills();
-
         BotNeuralNet* GetActiveBrain();
         BotNeuralNet* GetInitialBrain();
 
@@ -166,13 +144,6 @@ class Bot final: public Object {
 
         void SetColor(Color);
         void SetColor(Uint8, Uint8, Uint8);
-
-        static Color GetRandomColor();
-
-
-
-    private:
-
 
 
 };

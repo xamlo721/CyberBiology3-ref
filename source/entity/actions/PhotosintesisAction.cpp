@@ -35,9 +35,6 @@ void PhotosintesisAction::onActivate(Bot* object, CellCluster* cluster) {
         }
 
         object->GiveEnergy(toGive, EnumEnergySource::PS);
-
-        ++object->numPSonLand;
-
        
     } else { 
         //Below water

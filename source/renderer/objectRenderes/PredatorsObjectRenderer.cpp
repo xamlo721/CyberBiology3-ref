@@ -14,14 +14,17 @@ void PredatorsObjectRenderer::draw(Object* gameObject) {
             SDL_Texture* sprite_body = TextureLoader::getBotTexture()->image;
 
             //Draw body
-            int energySumm = ((Bot*)gameObject)->energyFromPredation + ((Bot*)gameObject)->energyFromPS + ((Bot*)gameObject)->energyFromOrganics;
+            int energySumm = gameObject->energy;
 
-            if (energySumm < 20)
+            //if (energySumm < 20)
                 SDL_SetTextureColorMod(sprite_body, 180, 180, 180);
+
+            /* Получение цвета бота по типу энергии (хищьник или нет)
             else
                 SDL_SetTextureColorMod(sprite_body, 255.0f * ((((Bot*)gameObject)->energyFromPredation * 1.0f) / (energySumm * 1.0f)),
                     255.0f * ((((Bot*)gameObject)->energyFromPS * 1.0f) / (energySumm * 1.0f)), 255.0f * ((((Bot*)gameObject)->energyFromOrganics * 1.0f) / (energySumm * 1.0f)));
-
+                    */
+            
             SDL_RenderCopy(renderer, sprite_body, &Object::image_rect, &object_rect);
 
             break;

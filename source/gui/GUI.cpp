@@ -177,7 +177,7 @@ void ApplicationGUIManager::DrawSelectionWindow()
 				//Object info
 				ImGui::Text("type: Bot	X: %i, Y: %i", Simulation::INSTANCE()->selectedObject->x, Simulation::INSTANCE()->selectedObject->y);
 				ImGui::Text("lifetime: %i / %i", Simulation::INSTANCE()->selectedObject->GetLifetime(), MaxBotLifetime);
-				ImGui::Text("energy: %i (PS: %i, predation: %i)", Simulation::INSTANCE()->selectedObject->energy, ((Bot*)Simulation::INSTANCE()->selectedObject)->GetEnergyFromPS(), ((Bot*)Simulation::INSTANCE()->selectedObject)->GetEnergyFromKills());
+				ImGui::Text("energy: %i ", Simulation::INSTANCE()->selectedObject->energy);
 
 				//Color
 				Uint8 c[3];

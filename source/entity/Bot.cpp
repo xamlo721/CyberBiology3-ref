@@ -9,8 +9,6 @@ Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, E
     energy = Energy;
     stunned = StunAfterBirth;
     fertilityDelay = FertilityDelay;
-    energyFromPS = 0;
-    energyFromPredation = 0;
 
     color = prototype->color;
 
@@ -31,8 +29,6 @@ Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::Bot) {
     energy = Energy;
     stunned = StunAfterBirth;
     fertilityDelay = FertilityDelay;
-    energyFromPS = 0;
-    energyFromPredation = 0;
 
     //Randomize Bot brain
     initialBrain.Randomize();
@@ -40,20 +36,16 @@ Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::Bot) {
     activeBrain.Optimize();
 
     //Random color
-    RandomizeColor();
+    color.SetRandom();
 
     //Random direction
     RandomDirection();
 
     addaptation_lastX = X;
-
-    //Temporary
-    numMovesY = 1000;
 }
 
 
-void Bot::CalculateLookAt()
-{
+void Bot::CalculateLookAt() {
     lookAt = Rotations[direction];
 
     lookAt.Shift(x, y);
@@ -62,16 +54,6 @@ void Bot::CalculateLookAt()
 
     lookAt_x = lookAt.x,
     lookAt_y = lookAt.y;
-}
-
-Color Bot::GetRandomColor() {
-    Color toRet;
-    toRet.SetRandom();
-    return toRet;
-}
-
-void Bot::RandomizeColor() {
-    color = GetRandomColor();
 }
 
 void Bot::RandomDirection() {
@@ -168,57 +150,11 @@ BrainOutput Bot::think(BrainInput input) {
     return toRet;
 }
 
-
-
-bool Bot::ArtificialSelectionWatcher_OnTick()
-{
-    //Winds
-    if (World::INSTANCE()->IsInWater(y))
-    {
-        if (addaptation_lastX < x)
-            ++adaptation_numRightSteps;
-
-        addaptation_lastX = x;
-
-        if (adaptationCounter++ == World::INSTANCE()->params.adaptation_StepsNum_Winds)
-        {
-            if (adaptation_numRightSteps == 0)
-            {
-                if (RandomPercentX10(World::INSTANCE()->params.adaptation_DeathChance_Winds))
-                    return true;
-            }
-
-            adaptation_numRightSteps = 0;
-            adaptationCounter = 0;
-        }
-    }
-
-    //Divers
-    FieldDynamicParams& params = World::INSTANCE()->params;
-
-    //Force movements Y
-    if (lifetime > 3)
-    {
-        if (numMovesY * 3 < (lifetime - 3))
-        {
-            if (RandomPercentX10(params.adaptation_forceBotMovements))
-                return true;
-        }
-    }
-
-    return false;
-}
-
 void Bot::tick() {
 
     ++lifetime;
 
     energy -= EveryTickEnergyPenalty;
-
-    if (ArtificialSelectionWatcher_OnTick()) {
-        isAlive = false;
-        return;
-    }
 
     if (((energy) <= 0) || (lifetime >= MaxBotLifetime)) {
         isAlive = false;
@@ -256,31 +192,7 @@ void Bot::GiveEnergy(int num, EnumEnergySource::EnergySource src)
         energy = MaxPossibleEnergyForABot;
     #endif
     }
-
-    if (src == EnumEnergySource::PS)
-    {
-        energyFromPS += num;
-    }
-    else if (src == EnumEnergySource::predation)
-    {
-        energyFromPredation += num;
-    }
-    else if (src == EnumEnergySource::organics)
-    {
-        energyFromOrganics += num;
-    }
 }
-
-int Bot::GetEnergyFromPS()
-{
-    return energyFromPS;
-}
-
-int Bot::GetEnergyFromKills()
-{
-    return energyFromPredation;
-}
-
 
 bool Bot::TakeEnergy(int val)
 {

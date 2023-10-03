@@ -31,8 +31,6 @@ void AttackAction::onActivate(Bot* object, CellCluster* cluster) {
             //Eat a Bot
             object->GiveEnergy(obj->energy, EnumEnergySource::predation);
             World::INSTANCE()->removeObjectSafetly(object->lookAt_x, object->lookAt_y);
-
-            ++object->numAttacks;
         }
        
     }
