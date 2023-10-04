@@ -1,8 +1,7 @@
 
 #include "Bot.h"
-#include "../world/EnumSeason.h"
-#include "../world/World.h"
 
+#include "../world/World.h"
 
 Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, EnumObjectType::Bot), initialBrain(&prototype->initialBrain) {
     isAlive = true;
@@ -39,42 +38,30 @@ Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::Bot) {
 
 void Bot::CalculateLookAt() {
     lookAt = Rotations[direction];
-
-    lookAt.Shift(x, y);
-
-    lookAt.x = World::INSTANCE()->ValidateX(lookAt.x);
 }
 
 BrainInput Bot::FillBrainInput() {
 
     BrainInput input;
 
-    //If destination is out of bounds
-    if (!World::INSTANCE()->IsInBounds(lookAt.x, lookAt.y))
+
+    Object* tmpDest = World::INSTANCE()->GetObjectLocalCoords(lookAt.x + x, lookAt.y + y);
+
+    //Destination cell is empty
+    if (!tmpDest)
     {
-        //1 if unpassable
-        input.vision = 1.0f;
+        //0 if empty
+        input.vision = 0.0f;
     }
     else
     {
-        Object* tmpDest = World::INSTANCE()->GetObjectLocalCoords(lookAt.x, lookAt.y);
-
-        //Destination cell is empty
-        if (!tmpDest)
+        //Destination not empty
+        switch (tmpDest->type)
         {
-            //0 if empty
-            input.vision = 0.0f;
-        }
-        else
-        {
-            //Destination not empty
-            switch (tmpDest->type)
-            {
-            case EnumObjectType::Bot:
-                //0.5 if someone is in that cell
-                input.vision = 1.0f;
-                break;
-            }
+        case EnumObjectType::Bot:
+            //0.5 if someone is in that cell
+            input.vision = 1.0f;
+            break;
         }
     }
 

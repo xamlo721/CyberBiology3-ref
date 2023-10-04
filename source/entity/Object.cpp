@@ -1,7 +1,5 @@
 #include "Object.h"
 
-#include "Bot.h"
-
 Object::Object(int xCoord, int yCoord, EnumObjectType::ObjectTypes type)
 	: x(xCoord), y(yCoord), type(type)  {
 
