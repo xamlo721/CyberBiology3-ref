@@ -8,11 +8,8 @@
 #include "../renderer/WorldRenderer.h"
 #include "../renderer/ObjectRenderer.h"
 
-class Object;
-
 //Don't touch
-#define NumThreads 32
-
+#define NumThreads 1
 
 
 class WorldController {
@@ -56,9 +53,6 @@ class WorldController {
         void UnpauseThreads();
         //Wait for all threads to finish their calculations
         void waitAllThreads();
-
-        //tick function for single threaded build
-        void tick_single_thread();
 
         //Multithreaded tick function
         inline void tick_multiple_threads(int threadIndex);

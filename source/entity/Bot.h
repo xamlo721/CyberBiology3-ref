@@ -71,14 +71,6 @@ class Bot final: public Object {
         //Bot gets initial brain from his parent, it is his original genes
         BotNeuralNet initialBrain;
 
-        //if this is not 0, Bot does nothing at his turn
-        int stunned;
-
-        //How long a Bot should wait before multiply
-        int fertilityDelay;
-
-        void RandomDirection();
-
         //Create brain input data
         BrainInput FillBrainInput();
 

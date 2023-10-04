@@ -182,14 +182,14 @@ void World::startStep() {
         //1) WORLD LOCK
         isLocked = true;
     }
-    world.worldMutex.lock();
+    //world.worldMutex.lock();
 
     //world.entityes.clear();//just for my paranoia
 
     //for (Object* obj : world.tempEntityes) {
     //    world.entityes.push_back(obj);
     //}
-    world.worldMutex.unlock();
+    //world.worldMutex.unlock();
 
     //3) World UNLOCK
     isLocked = false;
@@ -231,7 +231,6 @@ void World::stopStep() {
         isLocked = true;
     }
 
-    world.worldMutex.lock();
     for (Object* obj : world.tempEntityes) {
         Color c = obj->GetColor();
 
@@ -243,7 +242,6 @@ void World::stopStep() {
 
     }
     world.tempEntityes.clear();
-    world.worldMutex.unlock();
 
 
     //3) World UNLOCK

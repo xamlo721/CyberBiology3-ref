@@ -25,8 +25,7 @@ void WorldController::ObjectTick(Object* tmpObj) {
     if (!tmpObj->isAlive) {
         return;
     }
-
-
+    
     CellCluster* cluster = this->gameWorld->getObjectsArround(tmpObj);
     //1) 
     World::lock();
@@ -36,15 +35,6 @@ void WorldController::ObjectTick(Object* tmpObj) {
     World::unlock();
     
     {
-        /*This function returns 1 when the object is destroyed. OUTDATED!!!!!!
-         You should call it on every simulation tick before you
-         call same function in derived class
-         Returns:
-         0 - all fine
-         1 - object destroyed
-         2 - nothing to do(last tick frame matches current frame)*/
-
-         
         ((Bot*)tmpObj)->tick();
         
         BrainOutput actions = ((Bot*)tmpObj)->tmpOut;
@@ -58,7 +48,7 @@ void WorldController::ObjectTick(Object* tmpObj) {
             //FIXME: Этот дурдом с созданием объектов решается статическим списком Action в классе бота
             DivideAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
-        }
+        } 
 
         //Then attack
         if (actions.attack > 0) {
@@ -92,21 +82,6 @@ void WorldController::ObjectTick(Object* tmpObj) {
     gameWorld->updateCluster(cluster);
     cluster->unlock();
     delete cluster;
-
-}
-
-//tick function for single threaded build
-void WorldController::tick_single_thread() {
-
-    while (gameWorld->hasUnprocessedObject()) {
-
-        Object* tmpObj = gameWorld->getNextUnprocessedObject();
-
-        if (tmpObj) {
-
-            ObjectTick(tmpObj);
-        }  
-    }
 
 }
 
@@ -207,18 +182,6 @@ void WorldController::tick(uint thisFrame) {
 }
 
 
-void WorldController::SpawnControlGroup() {
-
-    for (int i = 0; i < ControlGroupSize; ++i) {
-
-        Bot* tmpBot = new Bot(RandomVal(FieldCellsWidth-2), RandomVal(FieldCellsHeight), MaxPossibleEnergyForABot);
-
-        if (!gameWorld->addObjectSafetly(tmpBot))
-            delete tmpBot;
-    }
-}
-
-
 
 WorldController::~WorldController() {
     repeat(NumThreads)
@@ -267,4 +230,16 @@ Point WorldController::ScreenCoordsToLocal(int X, int Y) {
     X = gameWorld->ValidateX(X);
 
     return { X, Y };
+}
+
+
+void WorldController::SpawnControlGroup() {
+
+    for (int i = 0; i < ControlGroupSize; ++i) {
+
+        Bot* tmpBot = new Bot(RandomVal(FieldCellsWidth - 2), RandomVal(FieldCellsHeight), MaxPossibleEnergyForABot);
+
+        if (!gameWorld->addObjectSafetly(tmpBot))
+            delete tmpBot;
+    }
 }

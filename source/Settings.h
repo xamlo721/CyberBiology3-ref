@@ -105,7 +105,7 @@
 #define FieldX InterfaceBorder
 #define FieldY InterfaceBorder
 
-#define FieldCellsWidth 13*16*4		//ƒолжно делитьс€ на 8 без остатка если нужны 4 потока! » на 16 без остатка если 8 потоков!
+#define FieldCellsWidth 13*16*16		//ƒолжно делитьс€ на 8 без остатка если нужны 4 потока! » на 16 без остатка если 8 потоков!
 #define FieldCellsHeight 133*2
 
 #define FieldRenderCellsWidth 202*2
@@ -156,7 +156,7 @@
 
 //#define SpawnOneAtStart
 //#define SpawnControlGroupAtStart
-#define ControlGroupSize 1000
+#define ControlGroupSize 10
 
 //-----------------------------------------------------------------
 
@@ -181,15 +181,7 @@
 #define RotateCost 1
 #define GiveBirthCost 10
 
-#define StunAfterBirth 1	//How many turns a creature cannot act after his birth
-#define FertilityDelay 0	//Delay before next birth
 
-#define OrganicWasteAlwaysFalls
-
-#define MutationChancePercent 20
-//#define UseTotalMutation
-#define TotalMutationChancePercentX10 0
-//#define RandomColorChancePercentX10 4
 #define ChangeColorSlightly
 #define BotColorChangeStrength 3
 

@@ -29,7 +29,7 @@ void DivideAction::onActivate(Bot* object, CellCluster* cluster) {
                 object->TakeEnergy(object->energy / 2 + GiveBirthCost);
 
                 if ((!RandomPercentX10(World::INSTANCE()->params.adaptation_botShouldBeOnLandOnceToMultiply)))
-                    World::INSTANCE()->addObjectSafetly(new Bot(freeSpace.x, freeSpace.y, object->energy, object, RandomPercent(MutationChancePercent)));
+                    World::INSTANCE()->addObjectSafetly(new Bot(freeSpace.x, freeSpace.y, object->energy, object, RandomPercent(10)));
 #endif
 
                 return;

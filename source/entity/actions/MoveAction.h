@@ -8,5 +8,7 @@ class MoveAction : public virtual IBotAction {
 
 		virtual void onActivate(Bot* object, CellCluster* cluster) override;
 
+	private:
+		bool moveObject(Object* obj, int toX, int toY, CellCluster* cluster);
 
 };

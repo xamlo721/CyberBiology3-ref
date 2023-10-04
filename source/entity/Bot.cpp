@@ -7,13 +7,11 @@
 Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, EnumObjectType::Bot), initialBrain(&prototype->initialBrain) {
     isAlive = true;
     energy = Energy;
-    stunned = StunAfterBirth;
-    fertilityDelay = FertilityDelay;
 
     color = prototype->color;
 
     //Random direction
-    RandomDirection();
+    direction = RandomVal(8);
 
     //Create active brain
     activeBrain.Clone(&initialBrain);
@@ -25,8 +23,6 @@ Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::Bot) {
     isAlive = true;
 
     energy = Energy;
-    stunned = StunAfterBirth;
-    fertilityDelay = FertilityDelay;
 
     //Randomize Bot brain
     initialBrain.Randomize();
@@ -37,7 +33,7 @@ Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::Bot) {
     color.SetRandom();
 
     //Random direction
-    RandomDirection();
+    direction = RandomVal(8);
 }
 
 
@@ -47,10 +43,6 @@ void Bot::CalculateLookAt() {
     lookAt.Shift(x, y);
 
     lookAt.x = World::INSTANCE()->ValidateX(lookAt.x);
-}
-
-void Bot::RandomDirection() {
-    direction = RandomVal(8);
 }
 
 BrainInput Bot::FillBrainInput() {
@@ -95,14 +87,6 @@ BrainInput Bot::FillBrainInput() {
 }
 
 BrainOutput Bot::think(BrainInput input) {
-
-    //Stunned means the creature can not act
-    if (stunned) {
-        --stunned;
-
-        return BrainOutput::GetEmptyBrain();
-    }
-
     //Clear all neuron values
     activeBrain.Clear();
 
@@ -129,17 +113,6 @@ BrainOutput Bot::think(BrainInput input) {
 
     BrainOutput toRet = activeBrain.GetOutput();
 
-    //Cannot multipy if not ready
-    if (fertilityDelay)
-    {
-        --fertilityDelay;
-        toRet.divide = 0;
-    }
-    else if (toRet.divide)
-    {
-        fertilityDelay = FertilityDelay;
-    }
-
     return toRet;
 }
 
@@ -154,8 +127,6 @@ void Bot::tick() {
         return;
     }
 
-    BrainOutput tmpOut;
-
     CalculateLookAt();
 
     //Fill brain input structure
@@ -163,6 +134,8 @@ void Bot::tick() {
 
     //Bot brain does its stuff
     tmpOut = think(input);
+
+    Sleep(1000);
     
     return;
 }
@@ -172,19 +145,12 @@ void Bot::GiveEnergy(int num, EnumEnergySource::EnergySource src)
 {
     energy += num;
 
-    if (energy > MaxPossibleEnergyForABot)
-    {
-    #ifdef BotDiesIfEnergyOverflow
-        energy = 0;
-        return;
-    #else
+    if (energy > MaxPossibleEnergyForABot) {
         energy = MaxPossibleEnergyForABot;
-    #endif
     }
 }
 
-bool Bot::TakeEnergy(int val)
-{
+bool Bot::TakeEnergy(int val) {
     energy -= val;
 
     return energy <= 0;
