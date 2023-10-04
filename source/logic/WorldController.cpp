@@ -17,6 +17,7 @@ WorldController::WorldController() {
         threadGoMarker[i] = false;
         threads[i] = new std::thread(&WorldController::tick_multiple_threads, this, i);
     }
+    this->pauseThreads = true;
 }
 
 void WorldController::ObjectTick(Object* tmpObj) {
@@ -93,7 +94,7 @@ void WorldController::StartThreads() {
 }
 
 void WorldController::PauseThreads() {
-    pauseThreads = false;
+    pauseThreads = true;
 }
 
 void WorldController::UnpauseThreads() {
@@ -116,7 +117,7 @@ void WorldController::waitAllThreads()
                 threadsReady++;
         }
 
-        if (threadsReady == NumThreads )
+        if ((threadsReady == NumThreads) && (!pauseThreads))
             break;
         Sleep(1);
         std::this_thread::yield();
@@ -127,24 +128,28 @@ void WorldController::waitAllThreads()
 //Multithreaded tick function
 inline void WorldController::tick_multiple_threads(int threadIndex) {
 
-    //waitAllThreads();
+    while (!terminateThreads) {
 
-    threadGoMarker[threadIndex] = false;
+        threadGoMarker[threadIndex] = false;
 
-    while (gameWorld->hasUnprocessedObject()) {
+        gameWorld->startStep();
+        while (gameWorld->hasUnprocessedObject()) {
 
-        Object* tmpObj = gameWorld->getNextUnprocessedObject();
+            Object* tmpObj = gameWorld->getNextUnprocessedObject();
 
-        if (tmpObj) {
+            if (tmpObj) {
 
-            ObjectTick(tmpObj);
-            Sleep(100);//debug working
+                ObjectTick(tmpObj);
+                Sleep(100);//debug working
+            }
         }
+        gameWorld->stopStep();
+
+        threadGoMarker[threadIndex] = true;
+        //Wait for threads to synchronize first time
+        waitAllThreads();
     }
 
-    threadGoMarker[threadIndex] = true;
-    //Wait for threads to synchronize first time
-    waitAllThreads();
 
 }
 
