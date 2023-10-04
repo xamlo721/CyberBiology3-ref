@@ -47,9 +47,6 @@ void Bot::CalculateLookAt() {
     lookAt.Shift(x, y);
 
     lookAt.x = World::INSTANCE()->ValidateX(lookAt.x);
-
-    lookAt_x = lookAt.x,
-    lookAt_y = lookAt.y;
 }
 
 void Bot::RandomDirection() {
@@ -61,14 +58,14 @@ BrainInput Bot::FillBrainInput() {
     BrainInput input;
 
     //If destination is out of bounds
-    if (!World::INSTANCE()->IsInBounds(lookAt_x, lookAt_y))
+    if (!World::INSTANCE()->IsInBounds(lookAt.x, lookAt.y))
     {
         //1 if unpassable
         input.vision = 1.0f;
     }
     else
     {
-        Object* tmpDest = World::INSTANCE()->GetObjectLocalCoords(lookAt_x, lookAt_y);
+        Object* tmpDest = World::INSTANCE()->GetObjectLocalCoords(lookAt.x, lookAt.y);
 
         //Destination cell is empty
         if (!tmpDest)

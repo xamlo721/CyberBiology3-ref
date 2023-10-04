@@ -4,10 +4,6 @@
 
 void PhotosintesisAction::onActivate(Bot* object, CellCluster* cluster) {
 
-    if (!object->isAlive) {
-        return;
-    }
-
     //Above water
     if (!World::INSTANCE()->IsInWater(object->y)) {
 

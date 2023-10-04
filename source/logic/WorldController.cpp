@@ -58,7 +58,6 @@ void WorldController::ObjectTick(Object* tmpObj) {
             //FIXME: Этот дурдом с созданием объектов решается статическим списком Action в классе бота
             DivideAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
-
         }
 
         //Then attack

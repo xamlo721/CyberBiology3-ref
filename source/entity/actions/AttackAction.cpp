@@ -4,10 +4,6 @@
 
 void AttackAction::onActivate(Bot* object, CellCluster* cluster) {
 
-    if (!object->isAlive) {
-        return;
-    }
-
     //If dies of low energy
     if (object->TakeEnergy(AttackCost)) {
         object->isAlive = false;
@@ -15,12 +11,12 @@ void AttackAction::onActivate(Bot* object, CellCluster* cluster) {
 
     } 
 
-    if (World::INSTANCE()->IsInBounds(object->lookAt_x, object->lookAt_y)) {
+    if (World::INSTANCE()->IsInBounds(object->lookAt.x, object->lookAt.y)) {
 
 
 
         //If there is an object
-        Object* obj = World::INSTANCE()->GetObjectLocalCoords(object->lookAt_x, object->lookAt_y);
+        Object* obj = World::INSTANCE()->GetObjectLocalCoords(object->lookAt.x, object->lookAt.y);
 
         if (!obj) {
             return;
@@ -30,7 +26,7 @@ void AttackAction::onActivate(Bot* object, CellCluster* cluster) {
 
             //Eat a Bot
             object->GiveEnergy(obj->energy, EnumEnergySource::predation);
-            World::INSTANCE()->removeObjectSafetly(object->lookAt_x, object->lookAt_y);
+            World::INSTANCE()->removeObjectSafetly(object->lookAt.x, object->lookAt.y);
         }
        
     }

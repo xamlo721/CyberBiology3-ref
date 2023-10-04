@@ -5,9 +5,7 @@
 #include "../../entity/Bot.h"
 
 void PredatorsObjectRenderer::draw(Object* gameObject) {
-    switch (gameObject->type) {
 
-        case EnumObjectType::Bot: {
             RenderUtils::CalcScreenX(gameObject);
             SDL_Rect object_rect = RenderUtils::CalcObjectRect(gameObject);
 
@@ -27,11 +25,4 @@ void PredatorsObjectRenderer::draw(Object* gameObject) {
             
             SDL_RenderCopy(renderer, sprite_body, &Object::image_rect, &object_rect);
 
-            break;
-        }
-        default: {
-            draw(gameObject);
-            break;
-        }
-    }
 };

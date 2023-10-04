@@ -3,10 +3,6 @@
 
 void RotateAction::onActivate(Bot* object, CellCluster* cluster) {
 
-    if (!object->isAlive) {
-        return;
-    }
-
     //If dies of low energy
     if (object->TakeEnergy(RotateCost)) {
         object->isAlive = false;

@@ -4,10 +4,6 @@
 
 void DivideAction::onActivate(Bot* object, CellCluster* cluster) {
 
-    if (!object->isAlive) {
-        return;
-    }
-
     if (ArtificialSelectionWatcher_OnDivide(object)) {
         return;
     }

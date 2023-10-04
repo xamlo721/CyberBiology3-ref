@@ -63,8 +63,6 @@ class Bot final: public Object {
         //That is what a Bot is looking at
         Point lookAt;
 
-        int lookAt_x, lookAt_y;
-
         void CalculateLookAt();
 
 
