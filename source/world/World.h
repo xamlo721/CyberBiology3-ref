@@ -29,6 +29,7 @@ class World {
         // 
         // !!!!!!!!!!!WARNING!!!!!!!!!!!
         abool isLocked = false;
+        abool isProcessing = false;
 
         PrivateSyncWorld world;
 
@@ -58,8 +59,6 @@ class World {
 
 	public:
         static uint seed;
-
-		EnumSeason::Season season;
 
         int photosynthesisReward = FoodbaseInitial;
         FieldDynamicParams params;

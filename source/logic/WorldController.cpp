@@ -130,9 +130,16 @@ inline void WorldController::tick_multiple_threads(int threadIndex) {
 
     while (!terminateThreads) {
 
+        ///Синхронизация начала тика
+        threadGoMarker[threadIndex] = false;
+        gameWorld->startStep();
+        threadGoMarker[threadIndex] = true;
+        waitAllThreads();
+
+
+        ///Синхронизация завершения тика
         threadGoMarker[threadIndex] = false;
 
-        gameWorld->startStep();
         while (gameWorld->hasUnprocessedObject()) {
 
             Object* tmpObj = gameWorld->getNextUnprocessedObject();

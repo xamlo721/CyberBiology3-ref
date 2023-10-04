@@ -174,6 +174,12 @@ bool World::moveObject(Object* obj, int toX, int toY) {
 //Swap entityes and tempEntityes
 void World::startStep() {
 
+    if (isProcessing) {
+        return;
+    }
+    isProcessing = true;
+
+
     {//World thread sync
         while (isLocked) {
             std::this_thread::yield();
@@ -218,6 +224,11 @@ bool World::hasUnprocessedObject() {
 }
 
 void World::stopStep() {
+
+    if (!isProcessing) {
+        return;
+    }
+    isProcessing = false;
 
     {//World thread sync
         while (isLocked) {
@@ -384,9 +395,16 @@ bool World::ValidateObjectExistance(Object* obj) {
 
 std::vector<Object*> World::getObjectsForRenderer() {
 
+    std::vector<Object*> copyList;
+
+    world.worldMutex.lock();
+
     for (Object* o : world.entityes) {
         Color c = o->GetColor();
+        copyList.push_back(o);
     }
 
-    return world.entityes;
+    world.worldMutex.unlock();
+
+    return copyList;
 }
