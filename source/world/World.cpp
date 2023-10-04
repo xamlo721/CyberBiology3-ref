@@ -207,9 +207,6 @@ Object* World::getNextUnprocessedObject() {
     Object* returnValue = world.entityes.at(randomIndex);
     world.entityes.erase(world.entityes.begin() + randomIndex);
 
-    //world.entityes.pop_front(); //why i can use somethink like takeFront()..
-    //world.tempEntityes.push_back(returnValue);
-
     Color c = returnValue->GetColor();
     world.worldMutex.unlock();
 

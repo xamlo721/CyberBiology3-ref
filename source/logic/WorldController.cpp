@@ -56,26 +56,25 @@ void WorldController::ObjectTick(Object* tmpObj) {
             action.onActivate(((Bot*)tmpObj), cluster);
 
         }
-        else {
 
-            //Rotate after
-            if (actions.desired_rotation != (((Bot*)tmpObj)->direction * .1f)) {
-                RotateAction action;
-                action.onActivate(((Bot*)tmpObj), cluster);
-            }
-
-            //Move
-            if (actions.move > 0) {
-                MoveAction action;
-                action.onActivate(((Bot*)tmpObj), cluster);
-            }
-            //Photosynthesis
-            else if (actions.photosynthesis > 0) {
-                PhotosintesisAction action;
-                action.onActivate(((Bot*)tmpObj), cluster);
-            }
-
+        //Rotate after
+        if (actions.desired_rotation != (((Bot*)tmpObj)->direction * .1f)) {
+            RotateAction action;
+            action.onActivate(((Bot*)tmpObj), cluster);
         }
+
+        //Move
+        if (actions.move > 0) {
+            MoveAction action;
+            action.onActivate(((Bot*)tmpObj), cluster);
+        }
+
+        //Photosynthesis
+        if (actions.photosynthesis > 0) {
+            PhotosintesisAction action;
+            action.onActivate(((Bot*)tmpObj), cluster);
+        }
+
         
     }
    
@@ -94,7 +93,7 @@ void WorldController::StartThreads() {
 }
 
 void WorldController::PauseThreads() {
-    pauseThreads = true;
+    pauseThreads = false;
 }
 
 void WorldController::UnpauseThreads() {
@@ -117,9 +116,9 @@ void WorldController::waitAllThreads()
                 threadsReady++;
         }
 
-        if (threadsReady == NumThreads)
+        if (threadsReady == NumThreads )
             break;
-
+        Sleep(1);
         std::this_thread::yield();
 
     }
@@ -128,7 +127,7 @@ void WorldController::waitAllThreads()
 //Multithreaded tick function
 inline void WorldController::tick_multiple_threads(int threadIndex) {
 
-    waitAllThreads();
+    //waitAllThreads();
 
     threadGoMarker[threadIndex] = false;
 
@@ -139,6 +138,7 @@ inline void WorldController::tick_multiple_threads(int threadIndex) {
         if (tmpObj) {
 
             ObjectTick(tmpObj);
+            Sleep(100);//debug working
         }
     }
 
