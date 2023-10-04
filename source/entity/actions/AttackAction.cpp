@@ -1,7 +1,5 @@
 #include "AttackAction.h"
 
-#include "../../world/World.h"
-
 void AttackAction::onActivate(Bot* object, CellCluster* cluster) {
 
     //If dies of low energy
@@ -11,25 +9,18 @@ void AttackAction::onActivate(Bot* object, CellCluster* cluster) {
 
     } 
 
-    if (World::INSTANCE()->IsInBounds(object->lookAt.x, object->lookAt.y)) {
-
-
-
-        //If there is an object
-        Object* obj = World::INSTANCE()->GetObjectLocalCoords(object->lookAt.x, object->lookAt.y);
-
-        if (!obj) {
-            return;
-        }
-
-        if (obj->type == EnumObjectType::Bot) {
-
-            //Eat a Bot
-            object->GiveEnergy(obj->energy, EnumEnergySource::predation);
-            World::INSTANCE()->removeObjectSafetly(object->lookAt.x, object->lookAt.y);
-        }
-       
+    if (cluster->area[object->lookAt.x][object->lookAt.y]->objectType != EnumObjectType::Bot) {
+        return;
     }
 
+    //If there is an object
+    Object* obj = cluster->area[object->lookAt.x][object->lookAt.y]->object;
+
+    //Eat a Bot
+    object->GiveEnergy(obj->energy, EnumEnergySource::predation);
+
+    obj->isAlive = false;
+
+    cluster->area[object->lookAt.x][object->lookAt.y]->objectType = EnumObjectType::Empty;
 
 }
