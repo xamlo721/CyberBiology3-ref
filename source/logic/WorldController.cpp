@@ -64,19 +64,19 @@ void WorldController::ObjectTick(Object* tmpObj) {
             RotateAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
         }
-
+        */
         //Move
         if (actions.move > 0) {
             MoveAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
         }
-
+        
         //Photosynthesis    
         if (actions.photosynthesis > 0) {
             PhotosintesisAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
         }
-        */
+        
         
     }
    
@@ -148,7 +148,7 @@ inline void WorldController::tick_multiple_threads(int threadIndex) {
             if (tmpObj) {
 
                 ObjectTick(tmpObj);
-                Sleep(100);
+                Sleep(10);
             }
         }
         gameWorld->stopStep();

@@ -32,6 +32,7 @@ class World {
         abool isProcessing = false;
 
         PrivateSyncWorld world;
+        std::vector<Object*> copyList;
 
         //Needed to calculate number of active objects and bots (calculated on every frame)
 

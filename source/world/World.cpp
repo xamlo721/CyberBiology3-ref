@@ -236,9 +236,17 @@ void World::stopStep() {
         isLocked = true;
     }
 
+
+
     //this->world.entityes.moveTo(world.tempEntityes);
     this->world.tempEntityes.moveTo(world.entityes);
 
+    copyList.clear();
+
+    for (Object* o : world.entityes) {
+        Color c = o->GetColor();
+        copyList.push_back(o);
+    }
 
     //3) World UNLOCK
     isLocked = false;
@@ -382,14 +390,6 @@ bool World::ValidateObjectExistance(Object* obj) {
 
 std::vector<Object*> World::getObjectsForRenderer() {
     auto lck = std::lock_guard{ world.worldMutex };
-
-    std::vector<Object*> copyList;
-
-
-    for (Object* o : world.entityes) {
-        Color c = o->GetColor();
-        copyList.push_back(o);
-    }
 
 
     return copyList;
