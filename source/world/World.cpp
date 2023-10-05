@@ -12,7 +12,7 @@ World::World() {
 
 
 void World::generateWorldBorder() {
-    world.worldMutex.lock();
+    auto lck = std::lock_guard{ world.worldMutex };
     //Горизонтальные стены
     for (int i = 0; i < FieldCellsWidth; i++) {
         world.worldMap[i][0].objectType = EnumObjectType::WorldBorder;
@@ -24,12 +24,12 @@ void World::generateWorldBorder() {
         world.worldMap[0][i].objectType = EnumObjectType::WorldBorder;
         world.worldMap[FieldCellsWidth - 1][i].objectType = EnumObjectType::WorldBorder;
     }
-    world.worldMutex.unlock();
 
 }
 
 
 bool World::addObjectSafetly(Object* obj) {
+    auto lck = std::lock_guard{ world.worldMutex };
 
     //World thread sync
     while (isLocked) {
@@ -50,10 +50,8 @@ bool World::addObjectSafetly(Object* obj) {
     //3) World UNLOCK
     isLocked = false;
 
-    world.worldMutex.lock();
     bool returnValue = world.addObjectUnsafetly(obj);
-    world.worldMutex.unlock();
-
+    
     //4) CELL UNLOCK
     world.worldMap[obj->x][obj->y].isLocked = false;
 
@@ -62,6 +60,7 @@ bool World::addObjectSafetly(Object* obj) {
 
 
 void World::removeObjectSafetly(int X, int Y) {
+    auto lck = std::lock_guard{ world.worldMutex };
 
     {//World thread sync
         while (isLocked) {
@@ -84,9 +83,7 @@ void World::removeObjectSafetly(int X, int Y) {
     isLocked = false;
 
     {//processing
-        world.worldMutex.lock();
         world.removeObjectUnsafetly(X, Y);
-        world.worldMutex.unlock();
 
     }
 
@@ -97,6 +94,7 @@ void World::removeObjectSafetly(int X, int Y) {
 }
 
 bool World::moveObject(Object* obj, int toX, int toY) {
+    auto lck = std::lock_guard{ world.worldMutex };
 
 
     {//World thread sync
@@ -147,7 +145,6 @@ bool World::moveObject(Object* obj, int toX, int toY) {
 
     //Processing
     {
-        world.worldMutex.lock();
         Object* tmpObj = world.worldMap[obj->x][obj->y].object;
 
         //Пометить, что теперь там нет бота
@@ -160,7 +157,6 @@ bool World::moveObject(Object* obj, int toX, int toY) {
 
         tmpObj->x = toX;
         tmpObj->y = toY;
-        world.worldMutex.unlock();
 
     }
 
@@ -173,6 +169,7 @@ bool World::moveObject(Object* obj, int toX, int toY) {
 
 //Swap entityes and tempEntityes
 void World::startStep() {
+    auto lck = std::lock_guard{ world.worldMutex };
 
     if (isProcessing) {
         return;
@@ -203,18 +200,17 @@ void World::startStep() {
 }
 
 Object* World::getNextUnprocessedObject() {
+    auto lck = std::lock_guard{ world.worldMutex };
 
     if (world.entityes.empty()) {
         return NULL;
     }
-    world.worldMutex.lock();
 
-    int randomIndex = rand() % world.entityes.size();
-    Object* returnValue = world.entityes.at(randomIndex);
-    world.entityes.erase(world.entityes.begin() + randomIndex);
+    Object* returnValue = world.entityes.getRandomItem();
 
     Color c = returnValue->GetColor();
-    world.worldMutex.unlock();
+
+    world.tempEntityes.push_back(returnValue);
 
     return returnValue;
 }
@@ -224,6 +220,7 @@ bool World::hasUnprocessedObject() {
 }
 
 void World::stopStep() {
+    auto lck = std::lock_guard{ world.worldMutex };
 
     if (!isProcessing) {
         return;
@@ -239,17 +236,8 @@ void World::stopStep() {
         isLocked = true;
     }
 
-    for (Object* obj : world.tempEntityes) {
-        Color c = obj->GetColor();
-
-        if (!obj->isAlive) {
-            delete obj;
-            continue;
-        }
-        world.entityes.push_back(obj);
-
-    }
-    world.tempEntityes.clear();
+    //this->world.entityes.moveTo(world.tempEntityes);
+    this->world.tempEntityes.moveTo(world.entityes);
 
 
     //3) World UNLOCK
@@ -258,6 +246,7 @@ void World::stopStep() {
 }
 
 CellCluster* World::getObjectsArround(Object* obj) {
+    auto lck = std::lock_guard{ world.worldMutex };
 
     {//World thread sync
         while (isLocked) {
@@ -267,7 +256,6 @@ CellCluster* World::getObjectsArround(Object* obj) {
         //1) WORLD LOCK
         isLocked = true;
     }
-    world.worldMutex.lock();
 
     CellCluster* cluster = new CellCluster();
     //-1 to +1
@@ -282,7 +270,6 @@ CellCluster* World::getObjectsArround(Object* obj) {
         }
 
     }
-    world.worldMutex.unlock();
 
 
     //3) World UNLOCK
@@ -292,17 +279,16 @@ CellCluster* World::getObjectsArround(Object* obj) {
 }
 
 void World::updateCluster(CellCluster* cluster) {
+    auto lck = std::lock_guard{ world.worldMutex };
 
     for (int i = 0; i < areaSize; i++) {
         for (int j = 0; j < areaSize; j++) {
 
             Cell * updatedCell = cluster->area[i][j];
-            if (updatedCell->objectType == EnumObjectType::Bot) {
-                world.worldMutex.lock();
-                world.tempEntityes.push_back(updatedCell->object);
-                world.worldMutex.unlock();
+            //if (updatedCell->objectType == EnumObjectType::Bot) {
+            //    world.tempEntityes.push_back(updatedCell->object);
 
-            }
+            //}
 
         }
     }
@@ -311,7 +297,8 @@ void World::updateCluster(CellCluster* cluster) {
 
 
 void World::RemoveAllObjects() {
-    world.worldMutex.lock();
+    auto lck = std::lock_guard{ world.worldMutex };
+
 
     for (int cx = 0; cx < FieldCellsWidth; ++cx)
     {
@@ -320,7 +307,6 @@ void World::RemoveAllObjects() {
             removeObjectSafetly(cx, cy);
         }
     }
-    world.worldMutex.unlock();
 
 }
 
@@ -343,6 +329,8 @@ bool World::IsInMud(int Y) {
 
 
 Object* World::GetObjectLocalCoords(int X, int Y) {
+        auto lck = std::lock_guard{ world.worldMutex };
+
     return world.worldMap[X][Y].object;
 }
 
@@ -393,17 +381,16 @@ bool World::ValidateObjectExistance(Object* obj) {
 }
 
 std::vector<Object*> World::getObjectsForRenderer() {
+    auto lck = std::lock_guard{ world.worldMutex };
 
     std::vector<Object*> copyList;
 
-    world.worldMutex.lock();
 
     for (Object* o : world.entityes) {
         Color c = o->GetColor();
         copyList.push_back(o);
     }
 
-    world.worldMutex.unlock();
 
     return copyList;
 }

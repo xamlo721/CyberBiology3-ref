@@ -38,12 +38,13 @@ void WorldController::ObjectTick(Object* tmpObj) {
     {
         ((Bot*)tmpObj)->tick();
         
+        
         BrainOutput actions = ((Bot*)tmpObj)->tmpOut;
 
 
         //TODO: Сделать правила для вызова Actions и перевести их на автомат
 
-
+        /*
         //Multiply first
         if (actions.divide > 0) {
             //FIXME: Этот дурдом с созданием объектов решается статическим списком Action в классе бота
@@ -70,12 +71,12 @@ void WorldController::ObjectTick(Object* tmpObj) {
             action.onActivate(((Bot*)tmpObj), cluster);
         }
 
-        //Photosynthesis
+        //Photosynthesis    
         if (actions.photosynthesis > 0) {
             PhotosintesisAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
         }
-
+        */
         
     }
    
@@ -147,7 +148,7 @@ inline void WorldController::tick_multiple_threads(int threadIndex) {
             if (tmpObj) {
 
                 ObjectTick(tmpObj);
-                Sleep(100);//debug working
+                Sleep(100);
             }
         }
         gameWorld->stopStep();

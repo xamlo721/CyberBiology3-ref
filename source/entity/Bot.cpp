@@ -116,8 +116,6 @@ void Bot::tick() {
 
     //Bot brain does its stuff
     tmpOut = think(input);
-
-    Sleep(1000);
     
     return;
 }
