@@ -8,19 +8,20 @@ void AttackAction::onActivate(Bot* object, CellCluster* cluster) {
         return;
 
     } 
+    Point clusterLookAtCoords = validateBotLookAtCoordinates(object->lookAt);
 
-    if (cluster->area[object->lookAt.x][object->lookAt.y]->objectType != EnumObjectType::Bot) {
+    if (cluster->area[clusterLookAtCoords.x][clusterLookAtCoords.y]->objectType != EnumObjectType::Bot) {
         return;
     }
 
     //If there is an object
-    Object* obj = cluster->area[object->lookAt.x][object->lookAt.y]->object;
+    Object* obj = cluster->area[clusterLookAtCoords.x][clusterLookAtCoords.y]->object;
 
     //Eat a Bot
     object->GiveEnergy(obj->energy, EnumEnergySource::predation);
 
     obj->isAlive = false;
 
-    cluster->area[object->lookAt.x][object->lookAt.y]->objectType = EnumObjectType::Empty;
+    cluster->area[clusterLookAtCoords.x][clusterLookAtCoords.y]->objectType = EnumObjectType::Empty;
 
 }

@@ -6,31 +6,29 @@ void MoveAction::onActivate(Bot* object, CellCluster* cluster) {
         object->isAlive = false;
         return;
     }
-    //Place object in a new place
-    int tmpY = object->y;
+    Point clusterLookAtCoords = validateBotLookAtCoordinates(object->lookAt);
+    Point clusterBootCoords = Point(0, 0);
 
-    this->moveObject(object, object->lookAt.x, object->lookAt.y, cluster);
+    this->moveObject(object, clusterBootCoords, clusterLookAtCoords, cluster);
 
 
 }
-bool MoveAction::moveObject(Object* obj, int toX, int toY, CellCluster* cluster) {
+bool MoveAction::moveObject(Object* obj, Point fromPoint, Point toPoint, CellCluster* cluster) {
 
-    if (cluster->area[toX][toY]->objectType != EnumObjectType::Empty) {
+    if (cluster->area[toPoint.x][toPoint.y]->objectType != EnumObjectType::Empty) {
         return false;
     }
 
-    Object* tmpObj = cluster->area[obj->x][obj->y]->object;
-
     //Пометить, что теперь там нет бота
-    cluster->area[obj->x][obj->y]->objectType = EnumObjectType::Empty;
-    cluster->area[obj->x][obj->y]->object = NULL;
+    cluster->area[fromPoint.x][fromPoint.y]->objectType = EnumObjectType::Empty;
+    cluster->area[fromPoint.x][fromPoint.y]->object = NULL;
 
     //Пометить, что теперь там бот
-    cluster->area[toX][toY]->objectType = EnumObjectType::Bot;
-    cluster->area[toX][toY]->object = tmpObj;
+    cluster->area[toPoint.x][toPoint.y]->objectType = EnumObjectType::Bot;
+    cluster->area[toPoint.x][toPoint.y]->object = obj;
 
-    tmpObj->x = toX;
-    tmpObj->y = toY;
+    obj->x += toPoint.x;
+    obj->y += toPoint.y;
 
     return true;
 }

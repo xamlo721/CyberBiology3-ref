@@ -12,8 +12,9 @@ void DivideAction::onActivate(Bot* object, CellCluster* cluster) {
 
     if (freeSpace.x != -1) {
         object->TakeEnergy(object->energy / 2 + GiveBirthCost);
+        Point clusterBootCoords = validateBotLookAtCoordinates(Point(object->x, object->y));
 
-        cluster->area[freeSpace.x][freeSpace.y]->object = new Bot(freeSpace.x + object->x, freeSpace.y + object->y, object->energy, object, RandomPercent(10));
+        cluster->area[freeSpace.x][freeSpace.y]->object = new Bot(freeSpace.x + clusterBootCoords.x, freeSpace.y + clusterBootCoords.y, object->energy, object, RandomPercent(10));
 
         return;
     }

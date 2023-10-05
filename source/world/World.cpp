@@ -298,7 +298,6 @@ void World::updateCluster(CellCluster* cluster) {
 
             Cell * updatedCell = cluster->area[i][j];
             if (updatedCell->objectType == EnumObjectType::Bot) {
-                Color c = updatedCell->object->GetColor();
                 world.worldMutex.lock();
                 world.tempEntityes.push_back(updatedCell->object);
                 world.worldMutex.unlock();

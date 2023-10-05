@@ -35,11 +35,6 @@ Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::Bot) {
     direction = RandomVal(8);
 }
 
-
-void Bot::CalculateLookAt() {
-    lookAt = Rotations[direction];
-}
-
 BrainInput Bot::FillBrainInput() {
 
     BrainInput input;
@@ -114,7 +109,7 @@ void Bot::tick() {
         return;
     }
 
-    CalculateLookAt();
+    lookAt = Rotations[direction];
 
     //Fill brain input structure
     BrainInput input = FillBrainInput();

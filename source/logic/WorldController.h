@@ -9,7 +9,7 @@
 #include "../renderer/ObjectRenderer.h"
 
 //Don't touch
-#define NumThreads 2
+#define NumThreads 32
 
 
 class WorldController {

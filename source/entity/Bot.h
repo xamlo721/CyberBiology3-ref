@@ -63,9 +63,6 @@ class Bot final: public Object {
         //That is what a Bot is looking at
         Point lookAt;
 
-        void CalculateLookAt();
-
-
         //Active brain - one that is used during simulation, may be changed or optimized
         BotNeuralNet activeBrain;
         //Bot gets initial brain from his parent, it is his original genes

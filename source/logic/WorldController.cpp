@@ -146,7 +146,7 @@ inline void WorldController::tick_multiple_threads(int threadIndex) {
 
             if (tmpObj) {
 
-                //ObjectTick(tmpObj);
+                ObjectTick(tmpObj);
                 Sleep(100);//debug working
             }
         }
