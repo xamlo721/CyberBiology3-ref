@@ -78,7 +78,10 @@ void WorldController::ObjectTick(Object* tmpObj) {
 
 }
 
+std::mutex mutex;
+
 void WorldController::onTickStated() {
+    auto lck = std::scoped_lock{ mutex };
     gameWorld->startStep();
 }
 
@@ -104,6 +107,7 @@ void WorldController::processTick(int threadIndex) {
 }
 
 void WorldController::onTickEnded() {
+    auto lck = std::scoped_lock{ mutex };
     gameWorld->stopStep();
 }
 

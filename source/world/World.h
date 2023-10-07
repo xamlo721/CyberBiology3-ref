@@ -28,13 +28,13 @@ class World {
         // »наче во врем€ коллизий кластеров может случитьс€ dead-lock 
         // 
         // !!!!!!!!!!!WARNING!!!!!!!!!!!
-        abool isLocked = false;
         abool isProcessing = false;
 
         PrivateSyncWorld world;
         std::vector<Object*> copyList;
 
         std::mutex clusterMutex;
+        std::mutex mapMutex;
 
         //Needed to calculate number of active objects and bots (calculated on every frame)
 
@@ -75,9 +75,9 @@ class World {
 
         //Service
 
-        void lockMap();
+        inline void lockMap();
 
-        void unlockMap();
+        inline void unlockMap();
         
 
 

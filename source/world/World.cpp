@@ -6,26 +6,16 @@ uint World::seed;
 World* World::instance = 0;
 
 World::World() {
-
+    isProcessing = false;
     this->generateWorldBorder();
 }
 
-void World::lockMap() {
-    //auto lck = std::scoped_lock{ clusterMutex };
-
-    //World thread sync
-    while (isLocked) {
-        Sleep(1);
-        std::this_thread::yield();
-    }
-
-    this->isLocked = true;
+inline void World::lockMap() {
+    mapMutex.lock();
 }
 
-void World::unlockMap() {
-    //auto lck = std::scoped_lock{ clusterMutex };
-
-    this->isLocked = false;
+inline void World::unlockMap() {
+    mapMutex.unlock();
 }
 
 void World::generateWorldBorder() {
