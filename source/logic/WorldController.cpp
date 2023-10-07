@@ -10,14 +10,9 @@
 //SINGLETON
 WorldController* WorldController::instance = 0;
 
-WorldController::WorldController() {
+WorldController::WorldController() : MyThreadLoop(NumThreads) {
 
-    //Start threads
-    for (int i = 0; i < NumThreads; i++) {
-        threadGoMarker[i] = false;
-        threads[i] = new std::thread(&WorldController::tick_multiple_threads, this, i);
-    }
-    this->pauseThreads = true;
+
 }
 
 void WorldController::ObjectTick(Object* tmpObj) {
@@ -83,155 +78,73 @@ void WorldController::ObjectTick(Object* tmpObj) {
 
 }
 
-//Start all threads
-void WorldController::StartThreads() {
-    repeat(NumThreads)
-    {
-        threadGoMarker[i] = true;
-    }
+void WorldController::onTickStated() {
+    gameWorld->startStep();
 }
 
-void WorldController::PauseThreads() {
-    pauseThreads = true;
-}
+void WorldController::processTick(int threadIndex) {
+    int startedHeight = (FieldCellsHeight / NumThreads) * threadIndex;
+    int endHeight = (FieldCellsHeight / NumThreads) * threadIndex + 1;
 
-void WorldController::UnpauseThreads() {
-    pauseThreads = false;
-}
+    //Ну тогда оно должно делиться на цело
+    for (int widthIndex = 0; widthIndex < FieldCellsWidth; widthIndex++) {
 
-//Wait for all threads to finish their calculations
-void WorldController::waitAllThreads()
-{
-    uint threadsReady;
-
-    for (;;)
-    {
-
-        threadsReady = 0;
-
-        repeat(NumThreads)
-        {
-            if (threadGoMarker[i] == true)
-                threadsReady++;
-        }
-
-        if ((threadsReady == NumThreads) && (!pauseThreads))
-            break;
-        Sleep(1);
-        std::this_thread::yield();
-
-    }
-}
-
-//Multithreaded tick function
-inline void WorldController::tick_multiple_threads(int threadIndex) {
-
-    while (!terminateThreads) {
-
-        ///Синхронизация начала тика
-        threadGoMarker[threadIndex] = false;
-        gameWorld->startStep();
-        threadGoMarker[threadIndex] = true;
-        waitAllThreads();
+        for (int heightIndex = startedHeight; heightIndex < endHeight; heightIndex++) {
 
 
-        ///Синхронизация завершения тика
-        threadGoMarker[threadIndex] = false;
+            Object* tmpObj = gameWorld->GetObjectLocalCoords(widthIndex, heightIndex);
 
-        for (int heightIndex = 0; heightIndex < FieldCellsHeight; heightIndex++) {
+            if (tmpObj) {
 
-            //Ну тогда оно должно делиться на цело
-            for (int widthIndex = 0; widthIndex < FieldCellsWidth / NumThreads; widthIndex++) {
-
-                Object* tmpObj = gameWorld->GetObjectLocalCoords(widthIndex, heightIndex);
-
-                if (tmpObj) {
-
-                    ObjectTick(tmpObj);
-                    Sleep(10);
-                }
+                ObjectTick(tmpObj);
+                Sleep(10);
             }
         }
-        threadGoMarker[threadIndex] = true;
-        waitAllThreads();
-
-
-        threadGoMarker[threadIndex] = false;
-        gameWorld->stopStep();
-        threadGoMarker[threadIndex] = true;
-        //Wait for threads to synchronize first time
-        waitAllThreads();
     }
-
-
 }
+
+void WorldController::onTickEnded() {
+    gameWorld->stopStep();
+}
+
 
 //Tick function
 void WorldController::tick(uint thisFrame) {
 
 
-    gameWorld->startStep();
+    //gameWorld->startStep();
 
-    StartThreads();
-    {
-        uint threadsReady;
+    //StartThreads();
+    //{
+    //    uint threadsReady;
 
-        for (;;)
-        {
+    //    for (;;)
+    //    {
 
-            threadsReady = 0;
+    //        threadsReady = 0;
 
-            repeat(NumThreads)
-            {
-                if (threadGoMarker[i] == true)
-                    threadsReady++;
-            }
+    //        repeat(NumThreads)
+    //        {
+    //            if (threadGoMarker[i] == true)
+    //                threadsReady++;
+    //        }
 
-            if (threadsReady == NumThreads) {
-                break;
-            }
+    //        if (threadsReady == NumThreads) {
+    //            break;
+    //        }
 
-            std::this_thread::yield();
+    //        std::this_thread::yield();
 
-        }
-    }
-    gameWorld->stopStep();
+    //    }
+    //}
+    //gameWorld->stopStep();
 
 }
 
 
 
 WorldController::~WorldController() {
-    repeat(NumThreads)
-        threadTerminated[i] = false;
 
-    terminateThreads = true;
-
-    for (;;)
-    {
-        uint tcount = 0;
-
-        repeat(NumThreads)
-        {
-            if (threadTerminated[i] == true)
-                ++tcount;
-        }
-
-        if (tcount == NumThreads)
-            break;
-
-        repeat(NumThreads)
-            threadGoMarker[i] = true;
-
-        pauseThreads = false;
-
-        SDL_Delay(1);
-    }
-
-    repeat(NumThreads)
-    {
-        threads[i]->join();
-    }
 }
 
 

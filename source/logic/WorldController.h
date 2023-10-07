@@ -8,15 +8,16 @@
 #include "../renderer/WorldRenderer.h"
 #include "../renderer/ObjectRenderer.h"
 
-//Don't touch
-#define NumThreads 1
+#include "MyThreadLoop.h"
 
 
-class WorldController {
+
+
+class WorldController : public virtual MyThreadLoop {
 
     private:
         static WorldController* instance;
-        WorldController();
+        WorldController() ;
 
     public:
         static WorldController* INSTANCE() {
@@ -32,34 +33,16 @@ class WorldController {
         WorldRenderer worldRenderer;
         ObjectRenderer objectRenderer;
 
-        //threads
-        abool threadGoMarker[NumThreads];
-        std::thread* threads[NumThreads];
-        abool threadTerminated[NumThreads];
-        abool terminateThreads = false;
-        abool pauseThreads = false;
-
-
         ~WorldController();
 
         //Spawn group of random bots
         void SpawnControlGroup();
 
+        virtual void onTickStated() override;
 
+        virtual void processTick(int threadIndex) override;
 
-        //Start all threads
-        void StartThreads();
-        void PauseThreads();
-        void UnpauseThreads();
-        //Wait for all threads to finish their calculations
-        void waitAllThreads();
-
-        //Multithreaded tick function
-        inline void tick_multiple_threads(int threadIndex);
-
-
-
-
+        virtual void onTickEnded() override;
 
         //Tick function
         void tick(uint thisFrame);

@@ -11,7 +11,7 @@ World::World() {
 }
 
 void World::lockMap() {
-    //auto lck = std::lock_guard{ clusterMutex };
+    //auto lck = std::scoped_lock{ clusterMutex };
 
     //World thread sync
     while (isLocked) {
@@ -23,13 +23,13 @@ void World::lockMap() {
 }
 
 void World::unlockMap() {
-    //auto lck = std::lock_guard{ clusterMutex };
+    //auto lck = std::scoped_lock{ clusterMutex };
 
     this->isLocked = false;
 }
 
 void World::generateWorldBorder() {
-    auto lck = std::lock_guard{ clusterMutex };
+    auto lck = std::scoped_lock{ clusterMutex };
 
     //Горизонтальные стены
     for (int i = 0; i < FieldCellsWidth; i++) {
@@ -47,7 +47,7 @@ void World::generateWorldBorder() {
 
 
 bool World::addObjectSafetly(Object* obj) {
-    auto lck = std::lock_guard{ clusterMutex };
+    auto lck = std::scoped_lock{ clusterMutex };
 
     this->lockMap();
 
@@ -65,7 +65,7 @@ bool World::addObjectSafetly(Object* obj) {
 
 
 void World::removeObjectSafetly(int X, int Y) {
-    auto lck = std::lock_guard{ clusterMutex };
+    auto lck = std::scoped_lock{ clusterMutex };
 
     this->lockMap();
 
@@ -84,7 +84,7 @@ void World::removeObjectSafetly(int X, int Y) {
 }
 
 bool World::moveObject(Object* obj, int toX, int toY) {
-    auto lck = std::lock_guard{ clusterMutex };
+    auto lck = std::scoped_lock{ clusterMutex };
 
     if (!IsInBounds(toX, toY)) {
         return false;
@@ -131,7 +131,7 @@ bool World::moveObject(Object* obj, int toX, int toY) {
 
 //Swap entityes and tempEntityes
 void World::startStep() {
-    auto lck = std::lock_guard{ clusterMutex };
+    auto lck = std::scoped_lock{ clusterMutex };
 
     if (isProcessing) {
         return;
@@ -147,7 +147,7 @@ void World::startStep() {
 }
 
 void World::stopStep() {
-    auto lck = std::lock_guard{ clusterMutex };
+    auto lck = std::scoped_lock{ clusterMutex };
 
     if (!isProcessing) {
         return;
@@ -163,7 +163,7 @@ void World::stopStep() {
 }
 
 CellCluster* World::getLockedCluster(Object* obj) {
-    auto lck = std::lock_guard{ clusterMutex };
+    auto lck = std::scoped_lock{ clusterMutex };
 
     if (obj->x == (FieldCellsWidth) || obj->y == (FieldCellsHeight)) {
         int c;
@@ -194,7 +194,7 @@ CellCluster* World::getLockedCluster(Object* obj) {
 }
 
 void World::RemoveAllObjects() {
-    auto lck = std::lock_guard{ clusterMutex };
+    auto lck = std::scoped_lock{ clusterMutex };
 
     for (int cx = 0; cx < FieldCellsWidth; ++cx) {
         for (int cy = 0; cy < FieldCellsHeight; ++cy) {
@@ -223,7 +223,7 @@ bool World::IsInMud(int Y) {
 
 
 Object* World::GetObjectLocalCoords(int X, int Y) {
-    auto lck = std::lock_guard{ clusterMutex };
+    auto lck = std::scoped_lock{ clusterMutex };
     return world.getObject(X, Y);
 }
 
@@ -274,7 +274,7 @@ bool World::ValidateObjectExistance(Object* obj) {
 }
 
 std::vector<Object*> World::getObjectsForRenderer() {
-    auto lck = std::lock_guard{ clusterMutex };
+    auto lck = std::scoped_lock{ clusterMutex };
 
     copyList.clear();
 
