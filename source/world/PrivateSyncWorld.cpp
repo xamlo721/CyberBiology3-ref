@@ -2,6 +2,12 @@
 
 PrivateSyncWorld::PrivateSyncWorld() {
 
+
+    for (int i = 0; i < FieldCellsWidth; i++) {
+        for (int j = 0; j < FieldCellsHeight; j++) {
+            worldMap[i][j] = new Cell();
+        }
+    }
 }
 
 
@@ -9,21 +15,16 @@ PrivateSyncWorld::PrivateSyncWorld() {
 
 bool PrivateSyncWorld::removeObjectUnsafetly(int globalXCoord, int globalYCoord) {
 
-    if (worldMap[globalXCoord][globalYCoord].objectType == EnumObjectType::Empty) {
+    if (isEmpty(globalXCoord, globalYCoord)) {
         return false;
     }
 
-    if (worldMap[globalXCoord][globalYCoord].objectType == EnumObjectType::Bot) {
-        Object* tmpO = worldMap[globalXCoord][globalYCoord].object;
-        tmpO->isAlive = false;
-        //if (entityes.)
-        //entityes.remove(tmpO);
-        //tempEntityes.remove(tmpO);
+    if (isBot(globalXCoord, globalYCoord)) {
+        Object* tmpO = worldMap[globalXCoord][globalYCoord]->object;
 
-        //delete tmpO;
+        delete tmpO;
 
-        //worldMap[globalXCoord][globalYCoord].objectType = EnumObjectType::Empty;
-        //worldMap[globalXCoord][globalYCoord].object = NULL;
+        setEmpty(globalXCoord, globalYCoord);
 
         return true;
     }
@@ -33,17 +34,13 @@ bool PrivateSyncWorld::removeObjectUnsafetly(int globalXCoord, int globalYCoord)
 
 bool PrivateSyncWorld::addObjectUnsafetly(Object* obj) {
 
-
     //Если там занято, о чём речь?
-    if (worldMap[obj->x][obj->y].objectType != EnumObjectType::Empty) {
+    if (!isEmpty(obj->x, obj->y)) {
         return false;
     }
 
-    //Пометить, что теперь там бот
-    worldMap[obj->x][obj->y].objectType = EnumObjectType::Bot;
-    worldMap[obj->x][obj->y].object = obj;
+    setObject(obj->x, obj->y, obj);
 
-    tempEntityes.push_back(obj);
 
 
 }

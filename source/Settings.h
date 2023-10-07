@@ -105,8 +105,8 @@
 #define FieldX InterfaceBorder
 #define FieldY InterfaceBorder
 
-#define FieldCellsWidth 13*16*1		//ƒолжно делитьс€ на 8 без остатка если нужны 4 потока! » на 16 без остатка если 8 потоков!
-#define FieldCellsHeight 133*1
+#define FieldCellsWidth 16*16*1		//ƒолжно делитьс€ на 8 без остатка если нужны 4 потока! » на 16 без остатка если 8 потоков!
+#define FieldCellsHeight 128*1
 
 #define FieldRenderCellsWidth 202*1
 

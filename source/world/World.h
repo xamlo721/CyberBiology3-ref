@@ -34,6 +34,8 @@ class World {
         PrivateSyncWorld world;
         std::vector<Object*> copyList;
 
+        std::mutex clusterMutex;
+
         //Needed to calculate number of active objects and bots (calculated on every frame)
 
     public:
@@ -43,19 +45,6 @@ class World {
                 instance = new World();
             }
             return instance;
-        }
-
-        static void lock() {
-
-            while (instance->isLocked) {
-                std::this_thread::yield();
-            }
-            instance->isLocked = true;
-
-        }
-
-        static void unlock() {
-            instance->isLocked = false;
         }
 
 	public:
@@ -82,17 +71,17 @@ class World {
         //thread-safetly
         bool moveObject(Object* obj, int toX, int toY);
 
-        CellCluster* getObjectsArround(Object * obj);
-
-        void updateCluster(CellCluster* cluster);
-
+        CellCluster* getLockedCluster(Object * obj);
 
         //Service
+
+        void lockMap();
+
+        void unlockMap();
+        
+
+
         void startStep();
-
-        Object* getNextUnprocessedObject();
-
-        bool hasUnprocessedObject();
 
         void stopStep();
 

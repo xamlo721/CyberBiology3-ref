@@ -10,166 +10,128 @@ World::World() {
     this->generateWorldBorder();
 }
 
+void World::lockMap() {
+    //auto lck = std::lock_guard{ clusterMutex };
+
+    //World thread sync
+    while (isLocked) {
+        Sleep(1);
+        std::this_thread::yield();
+    }
+
+    this->isLocked = true;
+}
+
+void World::unlockMap() {
+    //auto lck = std::lock_guard{ clusterMutex };
+
+    this->isLocked = false;
+}
 
 void World::generateWorldBorder() {
-    auto lck = std::lock_guard{ world.worldMutex };
+    auto lck = std::lock_guard{ clusterMutex };
+
     //Горизонтальные стены
     for (int i = 0; i < FieldCellsWidth; i++) {
-        world.worldMap[i][0].objectType = EnumObjectType::WorldBorder;
-        world.worldMap[i][FieldCellsHeight - 1].objectType = EnumObjectType::WorldBorder;
+        world.setWall(i, 0);
+        world.setWall(i, FieldCellsHeight - 1);
     }
 
     //Вертикальные стены 
     for (int i = 0; i < FieldCellsHeight; i++) {
-        world.worldMap[0][i].objectType = EnumObjectType::WorldBorder;
-        world.worldMap[FieldCellsWidth - 1][i].objectType = EnumObjectType::WorldBorder;
+        world.setWall(0, i);
+        world.setWall(FieldCellsWidth - 1, i);
     }
 
 }
 
 
 bool World::addObjectSafetly(Object* obj) {
-    auto lck = std::lock_guard{ world.worldMutex };
+    auto lck = std::lock_guard{ clusterMutex };
 
-    //World thread sync
-    while (isLocked) {
-        std::this_thread::yield();
-    } 
+    this->lockMap();
 
-    //1) WORLD LOCK
-    isLocked = true;
+    world.lockCell(obj->x, obj->y);
 
-    //Cell thread sync
-    while (world.worldMap[obj->x][obj->y].isLocked) {
-        std::this_thread::yield();
-    }
+    this->unlockMap();
 
-    //2) CELL LOCK
-    world.worldMap[obj->x][obj->y].isLocked = true;
-
-    //3) World UNLOCK
-    isLocked = false;
-
+    //processing
     bool returnValue = world.addObjectUnsafetly(obj);
-    
-    //4) CELL UNLOCK
-    world.worldMap[obj->x][obj->y].isLocked = false;
+
+    world.unlockCell(obj->x, obj->y);
 
     return returnValue;
 }
 
 
 void World::removeObjectSafetly(int X, int Y) {
-    auto lck = std::lock_guard{ world.worldMutex };
+    auto lck = std::lock_guard{ clusterMutex };
 
-    {//World thread sync
-        while (isLocked) {
-            std::this_thread::yield();
-        }
+    this->lockMap();
 
-        //1) WORLD LOCK
-        isLocked = true;
-    }
+    world.lockCell(X, Y);
 
-    {//Cell thread sync
-        while (world.worldMap[X][Y].isLocked) {
-            std::this_thread::yield();
-        }
-        //2) CELL LOCK
-        world.worldMap[X][Y].isLocked = true;
-    }
-
-    //3) World UNLOCK
-    isLocked = false;
+    this->unlockMap();
 
     {//processing
         world.removeObjectUnsafetly(X, Y);
 
     }
 
+    world.unlockCell(X, Y);
 
-    //4) CELL UNLOCK
-    world.worldMap[X][X].isLocked = false;
 
 }
 
 bool World::moveObject(Object* obj, int toX, int toY) {
-    auto lck = std::lock_guard{ world.worldMutex };
-
-
-    {//World thread sync
-        while (isLocked) {
-            std::this_thread::yield();
-        }
-
-        //1) WORLD LOCK
-        isLocked = true;
-    }
-
-
+    auto lck = std::lock_guard{ clusterMutex };
 
     if (!IsInBounds(toX, toY)) {
-        isLocked = false;
         return false;
     }
 
-    {//Cell thread sync
-        while (world.worldMap[obj->x][obj->y].isLocked) {
-            std::this_thread::yield();
-        }
-        //2) CELL LOCK
-        world.worldMap[toX][toY].isLocked = true;
-    }
+    this->lockMap();
+
+    world.lockCell(toX, toY);
 
 
-
-    if (world.worldMap[toX][toY].objectType != EnumObjectType::Empty) {
-        isLocked = false;
-        world.worldMap[toX][toY].isLocked = false;
+    if (!world.isEmpty(toX, toY)) {
+        this->unlockMap();
+        world.unlockCell(toX, toY);
         return false;
     }
     
-
-    {//Cell thread sync
-        while (world.worldMap[obj->x][obj->y].isLocked) {
-            std::this_thread::yield();
-        }
-
-        //2) CELL LOCK
-        world.worldMap[obj->x][obj->y].isLocked = true;
-    }
+    world.lockCell(obj->x, obj->y);
 
 
-    //3) World UNLOCK
-    isLocked = false;
+    this->unlockMap();
+
 
     //Processing
     {
-        Object* tmpObj = world.worldMap[obj->x][obj->y].object;
+        Object* tmpObj = world.getObject(obj->x, obj->y);
 
         //Пометить, что теперь там нет бота
-        world.worldMap[obj->x][obj->y].objectType = EnumObjectType::Empty;
-        world.worldMap[obj->x][obj->y].object = NULL;
+        world.setEmpty(obj->x, obj->y);
 
         //Пометить, что теперь там бот
-        world.worldMap[toX][toY].objectType = EnumObjectType::Bot;
-        world.worldMap[toX][toY].object = tmpObj;
+        world.setObject(toX, toY, tmpObj);
 
         tmpObj->x = toX;
         tmpObj->y = toY;
 
     }
 
-    //4) CELL UNLOCK
-    world.worldMap[obj->x][obj->y].isLocked = false;
-    world.worldMap[toX][toY].isLocked = false;
+    world.unlockCell(toX, toY);    
+    world.unlockCell(obj->x, obj->y);
+
 
     return true;
 }
 
 //Swap entityes and tempEntityes
 void World::startStep() {
-    auto lck = std::lock_guard{ world.worldMutex };
+    auto lck = std::lock_guard{ clusterMutex };
 
     if (isProcessing) {
         return;
@@ -177,141 +139,65 @@ void World::startStep() {
     isProcessing = true;
 
 
-    {//World thread sync
-        while (isLocked) {
-            std::this_thread::yield();
-        }
+    //this->lockMap();
+    //logic
+    //this->unlockMap();
 
-        //1) WORLD LOCK
-        isLocked = true;
-    }
-    //world.worldMutex.lock();
 
-    //world.entityes.clear();//just for my paranoia
-
-    //for (Object* obj : world.tempEntityes) {
-    //    world.entityes.push_back(obj);
-    //}
-    //world.worldMutex.unlock();
-
-    //3) World UNLOCK
-    isLocked = false;
-
-}
-
-Object* World::getNextUnprocessedObject() {
-    auto lck = std::lock_guard{ world.worldMutex };
-
-    if (world.entityes.empty()) {
-        return NULL;
-    }
-
-    Object* returnValue = world.entityes.getRandomItem();
-
-    Color c = returnValue->GetColor();
-
-    world.tempEntityes.push_back(returnValue);
-
-    return returnValue;
-}
-
-bool World::hasUnprocessedObject() {
-    return !(world.entityes.empty());
 }
 
 void World::stopStep() {
-    auto lck = std::lock_guard{ world.worldMutex };
+    auto lck = std::lock_guard{ clusterMutex };
 
     if (!isProcessing) {
         return;
     }
     isProcessing = false;
 
-    {//World thread sync
-        while (isLocked) {
-            std::this_thread::yield();
-        }
-
-        //1) WORLD LOCK
-        isLocked = true;
-    }
-
-
-
-    //this->world.entityes.moveTo(world.tempEntityes);
-    this->world.tempEntityes.moveTo(world.entityes);
+    this->lockMap();
 
     copyList.clear();
 
-    for (Object* o : world.entityes) {
-        Color c = o->GetColor();
-        copyList.push_back(o);
-    }
-
-    //3) World UNLOCK
-    isLocked = false;
+    this->unlockMap();
 
 }
 
-CellCluster* World::getObjectsArround(Object* obj) {
-    auto lck = std::lock_guard{ world.worldMutex };
+CellCluster* World::getLockedCluster(Object* obj) {
+    auto lck = std::lock_guard{ clusterMutex };
 
-    {//World thread sync
-        while (isLocked) {
-            std::this_thread::yield();
-        }
-
-        //1) WORLD LOCK
-        isLocked = true;
+    if (obj->x == (FieldCellsWidth) || obj->y == (FieldCellsHeight)) {
+        int c;
+        c = 0;
     }
 
-    CellCluster* cluster = new CellCluster();
+    this->lockMap();
+
+    CellCluster * cluster = new CellCluster();
     //-1 to +1
-    for (int nI = 0, i = - visibleDistance; i <= visibleDistance;  nI++, i++) {
+    for (int nI = 0, i = - 1; i <= 1;  nI++, i++) {
 
         //-1 to +1
-        for (int nJ = 0, j = - visibleDistance; j <= visibleDistance; nJ++, j++) {
+        for (int nJ = 0, j = - 1; j <= 1; nJ++, j++) {
 
-            cluster->area[nI][nJ] = &world.worldMap[obj->x + i][obj->y + j];
-            //Color c = world.worldMap[obj->x + i][obj->y + j].object->GetColor();
-
+            int validateXCoord = (obj->x + i) % (FieldCellsWidth);
+            int validateYCoord = (obj->y + j) % (FieldCellsHeight);
+            Cell* pCell = world.getCellPointer(validateXCoord, validateYCoord);
+            cluster->area[nI][nJ] = pCell;
         }
 
     }
+    cluster->lock();
 
-
-    //3) World UNLOCK
-    isLocked = false;
+    this->unlockMap();
 
     return cluster;
 }
 
-void World::updateCluster(CellCluster* cluster) {
-    auto lck = std::lock_guard{ world.worldMutex };
-
-    for (int i = 0; i < areaSize; i++) {
-        for (int j = 0; j < areaSize; j++) {
-
-            Cell * updatedCell = cluster->area[i][j];
-            //if (updatedCell->objectType == EnumObjectType::Bot) {
-            //    world.tempEntityes.push_back(updatedCell->object);
-
-            //}
-
-        }
-    }
-
-}
-
-
 void World::RemoveAllObjects() {
-    auto lck = std::lock_guard{ world.worldMutex };
+    auto lck = std::lock_guard{ clusterMutex };
 
-
-    for (int cx = 0; cx < FieldCellsWidth; ++cx)
-    {
-        for (int cy = 0; cy < FieldCellsHeight; ++cy)
-        {
+    for (int cx = 0; cx < FieldCellsWidth; ++cx) {
+        for (int cy = 0; cy < FieldCellsHeight; ++cy) {
             removeObjectSafetly(cx, cy);
         }
     }
@@ -337,20 +223,19 @@ bool World::IsInMud(int Y) {
 
 
 Object* World::GetObjectLocalCoords(int X, int Y) {
-        auto lck = std::lock_guard{ world.worldMutex };
-
-    return world.worldMap[X][Y].object;
+    auto lck = std::lock_guard{ clusterMutex };
+    return world.getObject(X, Y);
 }
 
 
 
 
 uint World::GetNumObjects() {
-    return world.entityes.size();
+    return FieldCellsWidth * FieldCellsHeight;
 }
 
 uint World::GetNumBots() {
-    return world.tempEntityes.size();
+    return copyList.size();
 }
 
 
@@ -377,7 +262,7 @@ bool World::ValidateObjectExistance(Object* obj) {
 
         for (uint iy = 0; iy < FieldCellsHeight; ++iy) {
 
-            if (world.worldMap[ix][iy].object == obj) {
+            if (world.getObject(ix, iy) == obj) {
                 return true;
             }
 
@@ -389,8 +274,21 @@ bool World::ValidateObjectExistance(Object* obj) {
 }
 
 std::vector<Object*> World::getObjectsForRenderer() {
-    auto lck = std::lock_guard{ world.worldMutex };
+    auto lck = std::lock_guard{ clusterMutex };
 
+    copyList.clear();
+
+    for (uint ix = 0; ix < FieldCellsWidth; ++ix) {
+
+        for (uint iy = 0; iy < FieldCellsHeight; ++iy) {
+
+            if (world.isBot(ix, iy)) {
+                copyList.push_back(world.getObject(ix, iy));
+            }
+
+        }
+
+    }
 
     return copyList;
 }

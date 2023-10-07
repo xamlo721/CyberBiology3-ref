@@ -19,6 +19,13 @@ bool MoveAction::moveObject(Object* obj, Point fromPoint, Point toPoint, CellClu
         return false;
     }
 
+    if (obj->x > 254) {
+
+        int c;
+        c = toPoint.x;
+        toPoint.x = c;
+    }
+
     //Пометить, что теперь там нет бота
     cluster->area[fromPoint.x][fromPoint.y]->objectType = EnumObjectType::Empty;
     cluster->area[fromPoint.x][fromPoint.y]->object = NULL;
@@ -27,8 +34,8 @@ bool MoveAction::moveObject(Object* obj, Point fromPoint, Point toPoint, CellClu
     cluster->area[toPoint.x][toPoint.y]->objectType = EnumObjectType::Bot;
     cluster->area[toPoint.x][toPoint.y]->object = obj;
 
-    obj->x += toPoint.x;
-    obj->y += toPoint.y;
+    obj->x = (obj->x + toPoint.x) % (FieldCellsWidth);
+    obj->y = (obj->y + toPoint.y) % (FieldCellsHeight);
 
     return true;
 }

@@ -4,6 +4,8 @@
 #include "../entity/Object.h"
 
 #include <list>
+#include <mutex>
+#include <shared_mutex>
 
 constexpr int visibleDistance = 1;
 constexpr int areaSize = ((visibleDistance * 2) + 1);//ќб€зательно должно быть не чЄтным
@@ -14,6 +16,7 @@ class CellCluster {
 	public :
 
 		Cell* area[areaSize][areaSize];
+		std::shared_mutex mutex;
 
 	public:
 
@@ -29,7 +32,8 @@ class CellCluster {
 		Point FindRandomNeighbourBot(int X, int Y);
 
 
-
+		CellCluster();
+		~CellCluster();
 		//multithreding
 
 		/**
@@ -39,10 +43,10 @@ class CellCluster {
 		 * «десь поток может встать в ожидание, если случитс€ коллизи€ и ожидать освобождени€
 		 * кластера с которым случилась коллизи€ другим потоком.
 		 * 
-		 * Ётот блокировщик Ќ≈Ћ№«я использовать отдельно от World::Lock();
+		 * Ётот блокировщик Ќ≈Ћ№«я использовать отдельно от World::lockMap();
 		 * 
 		 * 1) ``lock`` world
-		 * 2) ¬з€ть кластер (может уйти в синхрон тут, это нормально, т.к unlock асинхронный
+		 * 2) ¬з€ть кластер (может уйти в синхрон тут, это нормально, т.к unlockMap асинхронный
          * 3) ``lock`` cluster
          * 4) ``unlock`` world
          * 5) processing cluster

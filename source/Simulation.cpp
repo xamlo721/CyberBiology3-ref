@@ -293,7 +293,7 @@ Simulation::Simulation()
 	seed = Seed;
 #endif
 
-	worldController = new WorldController();
+	worldController = WorldController::INSTANCE();
 	worldController->gameWorld->seed = seed;
 	srand(seed);
 

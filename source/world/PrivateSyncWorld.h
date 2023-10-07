@@ -5,111 +5,92 @@
 #include "../entity/Object.h"
 #include "../entity/Bot.h"
 #include <vector>
+#include <shared_mutex>
+#include <mutex>
 
 class PrivateSyncWorld {
 
     private:
+        //main game map
+        Cell * worldMap[FieldCellsWidth][FieldCellsHeight];
 
+        mutable std::shared_mutex  worldMutex;
 
 
     public:
-        template<typename T> class thread_safe_vector {
-
-                std::vector<T> vec;
-                mutable std::mutex mut;
-
-            public:
-                T operator[](uint index) const {
-                    auto lck = std::lock_guard(mut);
-                    return vec[index];
-                }
-
-                void push_back(T value) {
-                    auto lck = std::lock_guard(mut);
-                    vec.push_back(value);
-                }
-
-                bool empty() {
-                    auto lck = std::lock_guard(mut);
-                    return vec.empty();
-                }
-
-                uint size() {
-                    auto lck = std::lock_guard(mut);
-                    return vec.size();
-                }
-
-                T at(uint index) {
-                    auto lck = std::lock_guard(mut);
-                    return vec.at(index);
-                }
-
-                std::vector<T>::iterator begin() {
-                    auto lck = std::lock_guard(mut);
-                    return vec.begin();
-                }
-
-                std::vector<T>::iterator end() {
-                    auto lck = std::lock_guard(mut);
-                    return vec.end();
-                }
-
-                void clear() {
-                    auto lck = std::lock_guard(mut);
-                    vec.clear();
-                }
-
-                void erase(std::vector<T>::const_iterator iterator) {
-                    auto lck = std::lock_guard(mut);
-                    vec.erase(iterator);
-                }
-
-                void moveTo(thread_safe_vector<T> & anotherVector) {
-                    auto lck = std::lock_guard(mut);
-                    for (T obj : vec) {
-
-                        
-                        if (!(Bot *)obj->isAlive) {
-                            delete obj;
-                            continue;
-                        }
-
-                        anotherVector.push_back(obj);
-
-                    }
-                    vec.clear();
-                }
-
-                T getRandomItem() {
-                    auto lck = std::lock_guard(mut);
-                    int randomIndex = rand() % vec.size();
-                    T returnValue = vec.at(randomIndex);
-                    vec.erase(vec.begin() + randomIndex);
-                    return returnValue;
-                }
-
-
-
-        };
-
-        std::mutex worldMutex;
-
-        //Игровое поле
-        Cell worldMap[FieldCellsWidth][FieldCellsHeight];
-
-        //Список объектов ожидающих обновления
-        thread_safe_vector<Object*> entityes;
-
-        //Список обновленных объектов
-        thread_safe_vector<Object*> tempEntityes;
-
-
         PrivateSyncWorld();
+
 
         //thread-unsafetly
         bool addObjectUnsafetly(Object* obj);
 
         bool removeObjectUnsafetly(int X, int Y);
+
+        void setWall(int xCoord, int yCoord) {
+            auto lck = std::unique_lock{ worldMutex };
+            worldMap[xCoord][yCoord]->objectType = EnumObjectType::WorldBorder;
+
+        }
+        void setEmpty(int xCoord, int yCoord) {
+            auto lck = std::unique_lock{ worldMutex };
+            worldMap[xCoord][yCoord]->objectType = EnumObjectType::Empty;
+            worldMap[xCoord][yCoord]->object = NULL;
+        }
+        void setObject(int xCoord, int yCoord, Object * obj) {
+            auto lck = std::unique_lock{ worldMutex };
+            worldMap[xCoord][yCoord]->objectType = EnumObjectType::Bot;
+            worldMap[xCoord][yCoord]->object = obj;
+        }
+
+
+
+        void lockCell(int xCoord, int yCoord) {
+            auto lck = std::unique_lock{ worldMutex };
+            while (worldMap[xCoord][yCoord]->isLocked) {
+                Sleep(1);
+                std::this_thread::yield();
+            }
+            worldMap[xCoord][yCoord]->isLocked = true;
+        }
+        void unlockCell(int xCoord, int yCoord) {
+            auto lck = std::shared_lock{ worldMutex };
+
+            worldMap[xCoord][yCoord]->isLocked = false;
+
+        }
+        bool isCellLocked(int xCoord, int yCoord) {
+            auto lck = std::unique_lock{ worldMutex };
+
+            return worldMap[xCoord][xCoord]->isLocked;
+        }
+        
+
+
+
+        bool isEmpty(int xCoord, int yCoord) {
+            auto lck = std::shared_lock{ worldMutex };
+            return worldMap[xCoord][yCoord]->objectType == EnumObjectType::Empty;
+        }
+        bool isBorder(int xCoord, int yCoord) {
+            auto lck = std::shared_lock{ worldMutex };
+            return worldMap[xCoord][yCoord]->objectType == EnumObjectType::WorldBorder;
+
+        }
+        bool isBot(int xCoord, int yCoord) {
+            auto lck = std::shared_lock{ worldMutex };
+            return worldMap[xCoord][yCoord]->objectType == EnumObjectType::Bot;
+        }
+
+
+        Object* getObject(int xCoord, int yCoord) {
+            auto lck = std::shared_lock{ worldMutex };
+            return worldMap[xCoord][yCoord]->object;
+        }
+
+        Cell* getCellPointer(int xCoord, int yCoord) {
+            auto lck = std::shared_lock{ worldMutex };
+            return worldMap[xCoord][yCoord];
+        }
 
 
 

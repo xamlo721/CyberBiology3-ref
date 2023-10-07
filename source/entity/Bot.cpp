@@ -40,7 +40,8 @@ BrainInput Bot::FillBrainInput() {
     BrainInput input;
 
 
-    Object* tmpDest = World::INSTANCE()->GetObjectLocalCoords(lookAt.x + x, lookAt.y + y);
+    //FIXME: Ну не должен он №#%%! из мира брать объекты на прямую!!!
+    Object* tmpDest = World::INSTANCE()->GetObjectLocalCoords((lookAt.x + x) % (FieldCellsWidth), (lookAt.y + y)%(FieldCellsHeight));
 
     //Destination cell is empty
     if (!tmpDest)

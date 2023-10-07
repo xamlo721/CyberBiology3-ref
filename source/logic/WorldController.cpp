@@ -27,13 +27,13 @@ void WorldController::ObjectTick(Object* tmpObj) {
         return;
     }
     
-    CellCluster* cluster = this->gameWorld->getObjectsArround(tmpObj);
+    CellCluster* cluster = this->gameWorld->getLockedCluster(tmpObj);
     //1) 
-    World::lock();
+    //gameWorld->lockMap();
     //2)
-    cluster->lock();
+    //cluster->lock();
     //3)
-    World::unlock();
+    //gameWorld->unlockMap();
     
     {
         ((Bot*)tmpObj)->tick();
@@ -44,27 +44,27 @@ void WorldController::ObjectTick(Object* tmpObj) {
 
         //TODO: Сделать правила для вызова Actions и перевести их на автомат
 
-        /*
+        /**/
         //Multiply first
         if (actions.divide > 0) {
             //FIXME: Этот дурдом с созданием объектов решается статическим списком Action в классе бота
             DivideAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
-        } 
-
+        }
+        
         //Then attack
         if (actions.attack > 0) {
             AttackAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
 
         }
-
+         
         //Rotate after
         if (actions.desired_rotation != (((Bot*)tmpObj)->direction * .1f)) {
             RotateAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
         }
-        */
+        
         //Move
         if (actions.move > 0) {
             MoveAction action;
@@ -79,9 +79,6 @@ void WorldController::ObjectTick(Object* tmpObj) {
         
         
     }
-   
-    gameWorld->updateCluster(cluster);
-    cluster->unlock();
     delete cluster;
 
 }
@@ -141,18 +138,26 @@ inline void WorldController::tick_multiple_threads(int threadIndex) {
         ///Синхронизация завершения тика
         threadGoMarker[threadIndex] = false;
 
-        while (gameWorld->hasUnprocessedObject()) {
+        for (int heightIndex = 0; heightIndex < FieldCellsHeight; heightIndex++) {
 
-            Object* tmpObj = gameWorld->getNextUnprocessedObject();
+            //Ну тогда оно должно делиться на цело
+            for (int widthIndex = 0; widthIndex < FieldCellsWidth / NumThreads; widthIndex++) {
 
-            if (tmpObj) {
+                Object* tmpObj = gameWorld->GetObjectLocalCoords(widthIndex, heightIndex);
 
-                ObjectTick(tmpObj);
-                Sleep(10);
+                if (tmpObj) {
+
+                    ObjectTick(tmpObj);
+                    Sleep(10);
+                }
             }
         }
-        gameWorld->stopStep();
+        threadGoMarker[threadIndex] = true;
+        waitAllThreads();
 
+
+        threadGoMarker[threadIndex] = false;
+        gameWorld->stopStep();
         threadGoMarker[threadIndex] = true;
         //Wait for threads to synchronize first time
         waitAllThreads();

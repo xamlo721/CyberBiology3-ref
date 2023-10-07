@@ -9,13 +9,14 @@
 #include "../renderer/ObjectRenderer.h"
 
 //Don't touch
-#define NumThreads 32
+#define NumThreads 1
 
 
 class WorldController {
 
     private:
         static WorldController* instance;
+        WorldController();
 
     public:
         static WorldController* INSTANCE() {
@@ -39,7 +40,6 @@ class WorldController {
         abool pauseThreads = false;
 
 
-        WorldController();
         ~WorldController();
 
         //Spawn group of random bots

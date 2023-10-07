@@ -2,6 +2,15 @@
 
 #include "World.h" //ќх не к добру такие зависимости
 
+CellCluster::CellCluster() {
+}
+
+CellCluster::~CellCluster() {
+
+    this->unlock();
+}
+
+
 //¬озвращает 8 объектов вокруг искомого
 std::list<Cell*> CellCluster::getObjectsArround() {
 
@@ -58,10 +67,10 @@ Point CellCluster::FindFreeNeighbourCell() {
     Point tmpArray[areaSize * areaSize];
     int i = 0;
 
-    for (int cx = -1; cx < 2; ++cx) {
-        for (int cy = -1; cy < 2; ++cy) {
+    for (int cx = 0; cx < areaSize - 1; ++cx) {
+        for (int cy = 0; cy < areaSize - 1; ++cy) {
 
-            if (area[cx][cy] == NULL) {
+            if (area[cx][cy]->object == NULL && area[cx][cy]->objectType == EnumObjectType::Empty) {
                 tmpArray[i++].Set(cx, cy);
             }
 
@@ -121,10 +130,10 @@ Point CellCluster::FindRandomNeighbourBot(int X, int Y) {
  * «десь поток может встать в ожидание, если случитс€ коллизи€ и ожидать освобождени€
  * кластера с которым случилась коллизи€ другим потоком.
  *
- * Ётот блокировщик Ќ≈Ћ№«я использовать отдельно от World::Lock();
+ * Ётот блокировщик Ќ≈Ћ№«я использовать отдельно от World::lockMap();
  *
  * 1) ``lock`` world
- * 2) ¬з€ть кластер (может уйти в синхрон тут, это нормально, т.к unlock асинхронный
+ * 2) ¬з€ть кластер (может уйти в синхрон тут, это нормально, т.к unlockMap асинхронный
  * 3) ``lock`` cluster (sync world)
  * 4) ``unlock`` world
  * 5) processing cluster
@@ -139,6 +148,7 @@ void CellCluster::lock() {
 
             //Collision detected - wait another thread
             while (area[cx][cy]->isLocked) {
+                Sleep(1);
                 std::this_thread::yield();
             }
 
