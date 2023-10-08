@@ -10,7 +10,7 @@
 
 class PrivateSyncWorld {
 
-    private:
+    public://fIXME
         //main game map
         Cell * worldMap[FieldCellsWidth][FieldCellsHeight];
 
@@ -91,8 +91,6 @@ class PrivateSyncWorld {
             auto lck = std::shared_lock{ worldMutex };
             return worldMap[xCoord][yCoord];
         }
-
-
 
 
 };

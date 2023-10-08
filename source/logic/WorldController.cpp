@@ -11,11 +11,10 @@
 WorldController* WorldController::instance = 0;
 
 WorldController::WorldController() : MyThreadLoop(NumThreads) {
-
-
+    gameWorld = World::INSTANCE();
 }
 
-void WorldController::ObjectTick(Object* tmpObj) {
+void WorldController::ObjectTick(Bot* tmpObj) {
     
     //Object destroyed
     if (!tmpObj->isAlive) {
@@ -23,54 +22,65 @@ void WorldController::ObjectTick(Object* tmpObj) {
     }
     
     CellCluster* cluster = this->gameWorld->getLockedCluster(tmpObj);
-    //1) 
-    //gameWorld->lockMap();
-    //2)
-    //cluster->lock();
-    //3)
-    //gameWorld->unlockMap();
-    
     {
-        ((Bot*)tmpObj)->tick();
-        
-        
-        BrainOutput actions = ((Bot*)tmpObj)->tmpOut;
+
+        tmpObj->tick();
+
+        BrainInput input;
+        {
+            Cell* visibleCell = cluster->getCellByLocalCoord(tmpObj->lookAt.x, tmpObj->lookAt.y);
+
+            //Destination cell is empty
+            if (visibleCell->objectType == EnumObjectType::Empty) {
+                //0 if empty
+                input.vision = 0.0f;
+            } else if (visibleCell->objectType == EnumObjectType::Bot)  {
+                    //0.5 if someone is in that cell
+                    input.vision = 1.0f;
+            }
+
+            input.age = (tmpObj->lifetime * 1.0f) / (MaxBotLifetime * 1.0f);
+
+            //input.rotation = (actions.desired_rotation == (direction * .1f))?1.0f:0.0f;
+            input.rotation = (tmpObj->direction * 1.0f) / 7.0f;
+        }
+        tmpObj->actions = tmpObj->think(input);
 
 
         //TODO: Сделать правила для вызова Actions и перевести их на автомат
 
-        /**/
+        /*
         //Multiply first
-        if (actions.divide > 0) {
+        if (tmpObj->actions.divide > 0) {
             //FIXME: Этот дурдом с созданием объектов решается статическим списком Action в классе бота
             DivideAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
         }
         
         //Then attack
-        if (actions.attack > 0) {
+        if (tmpObj->actions.attack > 0) {
             AttackAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
 
         }
          
         //Rotate after
-        if (actions.desired_rotation != (((Bot*)tmpObj)->direction * .1f)) {
+        if (tmpObj->actions.desired_rotation != (((Bot*)tmpObj)->direction * .1f)) {
             RotateAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
         }
         
         //Move
-        if (actions.move > 0) {
+        if (tmpObj->actions.move > 0) {
             MoveAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
         }
         
         //Photosynthesis    
-        if (actions.photosynthesis > 0) {
+        if (tmpObj->actions.photosynthesis > 0) {
             PhotosintesisAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
-        }
+        }*/
         
         
     }
@@ -87,7 +97,7 @@ void WorldController::onTickStated() {
 
 void WorldController::processTick(int threadIndex) {
     int startedHeight = (FieldCellsHeight / NumThreads) * threadIndex;
-    int endHeight = (FieldCellsHeight / NumThreads) * threadIndex + 1;
+    int endHeight = (FieldCellsHeight / NumThreads) * (threadIndex + 1);
 
     //Ну тогда оно должно делиться на цело
     for (int widthIndex = 0; widthIndex < FieldCellsWidth; widthIndex++) {
@@ -95,12 +105,20 @@ void WorldController::processTick(int threadIndex) {
         for (int heightIndex = startedHeight; heightIndex < endHeight; heightIndex++) {
 
 
-            Object* tmpObj = gameWorld->GetObjectLocalCoords(widthIndex, heightIndex);
+            Cell* cell = gameWorld->getCellPointer(widthIndex, heightIndex);
 
-            if (tmpObj) {
+            if (cell->objectType == EnumObjectType::Bot && cell->object != NULL) {
+
+                Bot* tmpObj = (Bot *)gameWorld->GetObjectLocalCoords(widthIndex, heightIndex);
+
+                if (tmpObj->x > 1000 || tmpObj->x < -1000) {
+                    throw WorldController();
+                }
+
+
 
                 ObjectTick(tmpObj);
-                Sleep(10);
+                //Sleep(10);
             }
         }
     }

@@ -1,8 +1,6 @@
 
 #include "Bot.h"
 
-#include "../world/World.h"
-
 Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, EnumObjectType::Bot), initialBrain(&prototype->initialBrain) {
     isAlive = true;
     energy = Energy;
@@ -35,39 +33,6 @@ Bot::Bot(int X, int Y, uint Energy) :Object(X, Y, EnumObjectType::Bot) {
     direction = RandomVal(8);
 }
 
-BrainInput Bot::FillBrainInput() {
-
-    BrainInput input;
-
-
-    //FIXME: Ну не должен он №#%%! из мира брать объекты на прямую!!!
-    Object* tmpDest = World::INSTANCE()->GetObjectLocalCoords((lookAt.x + x) % (FieldCellsWidth), (lookAt.y + y)%(FieldCellsHeight));
-
-    //Destination cell is empty
-    if (!tmpDest)
-    {
-        //0 if empty
-        input.vision = 0.0f;
-    }
-    else
-    {
-        //Destination not empty
-        switch (tmpDest->type)
-        {
-        case EnumObjectType::Bot:
-            //0.5 if someone is in that cell
-            input.vision = 1.0f;
-            break;
-        }
-    }
-
-    input.age = (lifetime * 1.0f) / (MaxBotLifetime * 1.0f);
-
-    //input.rotation = (tmpOut.desired_rotation == (direction * .1f))?1.0f:0.0f;
-    input.rotation = (direction * 1.0f) / 7.0f;
-
-    return input;
-}
 
 BrainOutput Bot::think(BrainInput input) {
     //Clear all neuron values
@@ -112,12 +77,6 @@ void Bot::tick() {
 
     lookAt = Rotations[direction];
 
-    //Fill brain input structure
-    BrainInput input = FillBrainInput();
-
-    //Bot brain does its stuff
-    tmpOut = think(input);
-    
     return;
 }
 

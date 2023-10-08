@@ -9,7 +9,7 @@ void RotateAction::onActivate(Bot* object, CellCluster* cluster) {
         return;
     }
     
-    int direction = (object->tmpOut.desired_rotation * 10.0f);
+    int direction = (object->actions.desired_rotation * 10.0f);
     //int direction = (object->direction * 10.0f);
 
     direction = direction % 8;

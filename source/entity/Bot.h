@@ -68,10 +68,7 @@ class Bot final: public Object {
         //Bot gets initial brain from his parent, it is his original genes
         BotNeuralNet initialBrain;
 
-        //Create brain input data
-        BrainInput FillBrainInput();
-
-        BrainOutput tmpOut;
+        BrainOutput actions;
 
     public:
 

@@ -1,13 +1,42 @@
 #include "CellCluster.h"
 
-#include "World.h" //ќх не к добру такие зависимости
+CellCluster::CellCluster(Cell* area[areaSize][areaSize]) {
 
-CellCluster::CellCluster() {
+    for (int cx = 0; cx < areaSize; ++cx) {
+        for (int cy = 0; cy < areaSize; ++cy) {
+            this->area[cx][cy] = area[cx][cy];
+        }
+    }
+
+
+    for (int cx = 0; cx < areaSize; ++cx) {
+        for (int cy = 0; cy < areaSize; ++cy) {
+
+
+            //Collision detected - wait another thread
+            while (area[cx][cy]->isLocked) {
+                Sleep(1);
+                std::this_thread::yield();
+            }
+
+            area[cx][cy]->isLocked = true;
+        }
+
+    }
 }
 
 CellCluster::~CellCluster() {
 
-    this->unlock();
+
+    for (int cx = 0; cx < areaSize; ++cx) {
+
+        for (int cy = 0; cy < areaSize; ++cy) {
+
+            area[cx][cy]->isLocked = false;
+
+        }
+
+    }
 }
 
 
@@ -104,7 +133,7 @@ Point CellCluster::FindRandomNeighbourBot(int X, int Y) {
     for (int cx = -1; cx < 2; ++cx) {
         for (int cy = -1; cy < 2; ++cy) {
 
-            if (area[cx][cy] == NULL) {
+            if (area[cx][cy] == NULL) {//Bug
                 tmpArray[i++].Set(cx, cy);
             }
 
@@ -120,55 +149,9 @@ Point CellCluster::FindRandomNeighbourBot(int X, int Y) {
     return { -1, -1 };
 }
 
+Cell* CellCluster::getCellByLocalCoord(int localXCoord, int localYCoord) {
+    int validateXCoord = localXCoord + visibleDistance;
+    int validateYCoord = localYCoord + visibleDistance;
 
-
-
-/**
- * Ѕлокировка всех объектов кластера от модификации
- * (я надеюсь никто в здравом уме не полезет модифицировать массив в обход?)
- *
- * «десь поток может встать в ожидание, если случитс€ коллизи€ и ожидать освобождени€
- * кластера с которым случилась коллизи€ другим потоком.
- *
- * Ётот блокировщик Ќ≈Ћ№«я использовать отдельно от World::lockMap();
- *
- * 1) ``lock`` world
- * 2) ¬з€ть кластер (может уйти в синхрон тут, это нормально, т.к unlockMap асинхронный
- * 3) ``lock`` cluster (sync world)
- * 4) ``unlock`` world
- * 5) processing cluster
- * 6) ``unlock`` cluster (async world)
- *
- */
-void CellCluster::lock() {
-
-    for (int cx = 0; cx < areaSize; ++cx) {
-        for (int cy = 0; cy < areaSize; ++cy) {
-
-
-            //Collision detected - wait another thread
-            while (area[cx][cy]->isLocked) {
-                Sleep(1);
-                std::this_thread::yield();
-            }
-
-            area[cx][cy]->isLocked = true;
-        }
-
-    }
-}
-
-
-void CellCluster::unlock() {
-
-    for (int cx = 0; cx < areaSize; ++cx) {
-
-        for (int cy = 0; cy < areaSize; ++cy) {
-
-            area[cx][cy]->isLocked = false;
-
-        }
-
-    }
-
+    return this->area[validateXCoord][validateYCoord];
 }

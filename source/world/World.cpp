@@ -129,9 +129,27 @@ void World::startStep() {
     isProcessing = true;
 
 
-    //this->lockMap();
-    //logic
-    //this->unlockMap();
+    this->lockMap();
+
+    {//check deads
+
+        for (int i = 0; i < FieldCellsWidth; i++) {
+            for (int j = 0; j < FieldCellsHeight; j++) {
+                world.lockCell(i, j);
+                Object* obj = world.getObject(i, j);
+                if (world.isBot(i, j) && obj->isAlive == false) {
+                    world.setEmpty(i, j);
+                    delete obj;
+
+                }
+                world.unlockCell(i, j);
+
+            }
+        }
+    }
+
+
+    this->unlockMap();
 
 
 }
@@ -162,26 +180,32 @@ CellCluster* World::getLockedCluster(Object* obj) {
 
     this->lockMap();
 
-    CellCluster * cluster = new CellCluster();
+    Cell* clusterArea[areaSize][areaSize];
+
     //-1 to +1
     for (int nI = 0, i = - 1; i <= 1;  nI++, i++) {
 
         //-1 to +1
         for (int nJ = 0, j = - 1; j <= 1; nJ++, j++) {
 
-            int validateXCoord = (obj->x + i) % (FieldCellsWidth);
-            int validateYCoord = (obj->y + j) % (FieldCellsHeight);
-            Cell* pCell = world.getCellPointer(validateXCoord, validateYCoord);
-            cluster->area[nI][nJ] = pCell;
+            //int validateXCoord = (obj->x + i) % (FieldCellsWidth);
+            //int validateYCoord = (obj->y + j) % (FieldCellsHeight);
+            //Cell* pCell = world.getCellPointer(validateXCoord, validateYCoord);
+            
+            Cell* pCell = world.getCellPointer((obj->x + i), (obj->y + j));
+
+            clusterArea[nI][nJ] = pCell;
         }
 
     }
-    cluster->lock();
+    CellCluster* cluster = new CellCluster(clusterArea);
 
     this->unlockMap();
 
     return cluster;
 }
+
+
 
 void World::RemoveAllObjects() {
     auto lck = std::scoped_lock{ clusterMutex };
@@ -213,7 +237,7 @@ bool World::IsInMud(int Y) {
 
 
 Object* World::GetObjectLocalCoords(int X, int Y) {
-    auto lck = std::scoped_lock{ clusterMutex };
+    //auto lck = std::scoped_lock{ clusterMutex };
     return world.getObject(X, Y);
 }
 
@@ -263,7 +287,7 @@ bool World::ValidateObjectExistance(Object* obj) {
     return false;
 }
 
-std::vector<Object*> World::getObjectsForRenderer() {
+std::vector<Cell*> World::getObjectsForRenderer() {
     auto lck = std::scoped_lock{ clusterMutex };
 
     copyList.clear();
@@ -273,7 +297,7 @@ std::vector<Object*> World::getObjectsForRenderer() {
         for (uint iy = 0; iy < FieldCellsHeight; ++iy) {
 
             if (world.isBot(ix, iy)) {
-                copyList.push_back(world.getObject(ix, iy));
+                copyList.push_back(world.getCellPointer(ix, iy));
             }
 
         }

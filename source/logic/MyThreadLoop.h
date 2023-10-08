@@ -35,6 +35,9 @@ class MyThreadLoop {
 
         void tick_multiple_threads(int threadIndex) {
 
+            threadGoMarker[threadIndex] = true;
+            waitAllThreads();
+
             while (!terminateThreads) {
 
                 ///Синхронизация начала тика
@@ -57,6 +60,7 @@ class MyThreadLoop {
                 threadGoMarker[threadIndex] = true;
                 //Wait for threads to synchronize first time
                 waitAllThreads();
+
             }
 
 

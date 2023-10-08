@@ -30,8 +30,7 @@ class World {
         // !!!!!!!!!!!WARNING!!!!!!!!!!!
         abool isProcessing = false;
 
-        PrivateSyncWorld world;
-        std::vector<Object*> copyList;
+        std::vector<Cell*> copyList;
 
         std::mutex clusterMutex;
         std::mutex mapMutex;
@@ -39,6 +38,7 @@ class World {
         //Needed to calculate number of active objects and bots (calculated on every frame)
 
     public:
+        PrivateSyncWorld world;
 
         static World* INSTANCE() {
             if (instance == 0) {
@@ -65,6 +65,9 @@ class World {
         //thread-safetly
         void removeObjectSafetly(int X, int Y);
 
+        Cell* getCellPointer(int X, int Y) {
+            return world.getCellPointer(X, Y);
+        }
 
         void RemoveAllObjects();
 
@@ -108,6 +111,6 @@ class World {
 
 
         //yes, its achitecture mistacke, dont use it.
-        std::vector<Object*> getObjectsForRenderer();
+        std::vector<Cell*> getObjectsForRenderer();
 };
 

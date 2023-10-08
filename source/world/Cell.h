@@ -14,15 +14,17 @@ class Cell {
 		// то стоит на клетке
 		EnumObjectType::ObjectTypes objectType; //я использовал не класс, дл€ экономии озу
 
+		abool isLocked;
+
+
+		Object* object;
+
 		//»з чего сделана сама клетка
 		EnumCellMaterial::CellMaterial material; //я использовал не класс, дл€ экономии озу
 
 		//Ёнерги€ на клетке
 		Uint8 energy;
 
-		abool isLocked;
-
-		Object* object;
 
 		Cell() {
 			objectType = EnumObjectType::Empty;

@@ -13,12 +13,13 @@ constexpr int areaSize = ((visibleDistance * 2) + 1);//Обязательно должно быть н
 
 class CellCluster {
 
-	public :
-
+	public:
 		Cell* area[areaSize][areaSize];
 		std::shared_mutex mutex;
 
 	public:
+		CellCluster(Cell* area[areaSize][areaSize]);
+		~CellCluster();
 
 		//Возвращает 8 объектов вокруг искомого
 		std::list<Cell*> getObjectsArround();
@@ -31,31 +32,9 @@ class CellCluster {
 
 		Point FindRandomNeighbourBot(int X, int Y);
 
+		Cell* getCellByLocalCoord(int localXCoord, int localYCoord);
 
-		CellCluster();
-		~CellCluster();
-		//multithreding
 
-		/**
-		 * Блокировка всех объектов кластера от модификации
-		 * (Я надеюсь никто в здравом уме не полезет модифицировать массив в обход?)
-		 * 
-		 * Здесь поток может встать в ожидание, если случится коллизия и ожидать освобождения
-		 * кластера с которым случилась коллизия другим потоком.
-		 * 
-		 * Этот блокировщик НЕЛЬЗЯ использовать отдельно от World::lockMap();
-		 * 
-		 * 1) ``lock`` world
-		 * 2) Взять кластер (может уйти в синхрон тут, это нормально, т.к unlockMap асинхронный
-         * 3) ``lock`` cluster
-         * 4) ``unlock`` world
-         * 5) processing cluster
-         * 6) ``unlock`` cluster (async world)
-		 * 
-		 */
-		void lock();
-
-		void unlock();
 
 };
 

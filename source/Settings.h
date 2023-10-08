@@ -19,7 +19,7 @@
 
 #define WindowCaption "CyberBio v1.2.1"
 
-#define WindowWidth 1920
+#define WindowWidth 1340
 #define WindowHeight 1080
 
 #define BackgroundColorFloat 0.0f,0.0f,0.0f,255.0f
@@ -93,7 +93,7 @@
 #define Keyboard_Jump_Down_RenderX SDL_SCANCODE_PAGEDOWN
 
 #define MoveCameraSpeed 1
-#define MoveCameraFastSpeed 6
+#define MoveCameraFastSpeed 32
 #define MoveCameraJump 125
 
 //-----------------------------------------------------------------
@@ -105,12 +105,12 @@
 #define FieldX InterfaceBorder
 #define FieldY InterfaceBorder
 
-#define FieldCellsWidth 16*16*1		//ƒолжно делитьс€ на 8 без остатка если нужны 4 потока! » на 16 без остатка если 8 потоков!
-#define FieldCellsHeight 128*1
+#define FieldCellsWidth 16*2*1		//ƒолжно делитьс€ на 8 без остатка если нужны 4 потока! » на 16 без остатка если 8 потоков!
+#define FieldCellsHeight 32*1
 
-#define FieldRenderCellsWidth 202*1
+#define FieldRenderCellsWidth 32*1
 
-#define FieldCellSize 8
+#define FieldCellSize 32
 #define FieldCellSizeHalf FieldCellSize/2
 #define FieldWidth FieldCellSize*FieldRenderCellsWidth
 #define FieldHeight FieldCellSize*FieldCellsHeight
@@ -156,7 +156,7 @@
 
 //#define SpawnOneAtStart
 //#define SpawnControlGroupAtStart
-#define ControlGroupSize 10
+#define ControlGroupSize 100
 
 //-----------------------------------------------------------------
 

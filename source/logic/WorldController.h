@@ -29,7 +29,7 @@ class WorldController : public virtual MyThreadLoop {
 
     public:
 
-        World * gameWorld = World::INSTANCE();
+        World * gameWorld;
         WorldRenderer worldRenderer;
         ObjectRenderer objectRenderer;
 
@@ -48,7 +48,7 @@ class WorldController : public virtual MyThreadLoop {
         void tick(uint thisFrame);
 
         //Tick function for every object
-        void ObjectTick(Object* tmpObj);
+        void ObjectTick(Bot* tmpObj);
 
         //Transform absolute screen coords to cell position on field
         Point ScreenCoordsToLocal(int X, int Y);
