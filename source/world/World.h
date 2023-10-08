@@ -28,7 +28,6 @@ class World {
         // »наче во врем€ коллизий кластеров может случитьс€ dead-lock 
         // 
         // !!!!!!!!!!!WARNING!!!!!!!!!!!
-        abool isProcessing = false;
 
         std::vector<Cell*> copyList;
 

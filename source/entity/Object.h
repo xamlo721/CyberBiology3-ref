@@ -28,6 +28,8 @@ class Object : public virtual IRenderableObject, public ITickable {
 
 		EnumObjectType::ObjectTypes type;
 
+		long long lastUpdatedTick = 0;
+
 
 		//Маркер удаления
 		bool isAlive;

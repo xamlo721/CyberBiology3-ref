@@ -40,7 +40,7 @@ class WorldController : public virtual MyThreadLoop {
 
         virtual void onTickStated() override;
 
-        virtual void processTick(int threadIndex) override;
+        virtual void processTick(int threadIndex, long long poolTick) override;
 
         virtual void onTickEnded() override;
 

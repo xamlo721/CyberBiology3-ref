@@ -6,7 +6,6 @@ uint World::seed;
 World* World::instance = 0;
 
 World::World() {
-    isProcessing = false;
     this->generateWorldBorder();
 }
 
@@ -123,10 +122,7 @@ bool World::moveObject(Object* obj, int toX, int toY) {
 void World::startStep() {
     auto lck = std::scoped_lock{ clusterMutex };
 
-    if (isProcessing) {
-        return;
-    }
-    isProcessing = true;
+
 
 
     this->lockMap();
@@ -157,10 +153,6 @@ void World::startStep() {
 void World::stopStep() {
     auto lck = std::scoped_lock{ clusterMutex };
 
-    if (!isProcessing) {
-        return;
-    }
-    isProcessing = false;
 
     this->lockMap();
 

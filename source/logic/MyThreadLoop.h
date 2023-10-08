@@ -15,6 +15,10 @@ class MyThreadLoop {
         abool pauseThreads = false;
         abool syncGoFlag = false;
 
+        long long poolTick = 0;
+
+        abool isProcessing = false;
+
     public:
 
         MyThreadLoop(int threadCount) {
@@ -30,9 +34,30 @@ class MyThreadLoop {
         }
         virtual void onTickStated() = 0;
 
-        virtual void processTick(int threadIndex) = 0;
+        virtual void processTick(int threadIndex, long long poolTick) = 0;
 
         virtual void onTickEnded() = 0;
+
+        void privateTickStated() {
+            if (isProcessing) {
+                return;
+            }
+            isProcessing = true;
+
+            poolTick++;
+            this->onTickStated();
+
+        }
+
+        void privateTickEnded() {
+
+            if (!isProcessing) {
+                return;
+            }
+            isProcessing = false;
+
+            this->onTickEnded();
+        }
 
         void tick_multiple_threads(int threadIndex) {
 
@@ -43,23 +68,22 @@ class MyThreadLoop {
 
                 ///Синхронизация начала тика
                 threadGoMarker[threadIndex] = false;
-                this->onTickStated();
                 this->syncGoFlag = false;
-
+                privateTickStated();
                 threadGoMarker[threadIndex] = true;
                 waitAllThreads();
 
 
                 ///Синхронизация завершения тика
                 threadGoMarker[threadIndex] = false;
-                this->processTick(threadIndex);
+                this->processTick(threadIndex, poolTick);
                 this->syncGoFlag = false;
                 threadGoMarker[threadIndex] = true;
                 waitAllThreads();
 
 
                 threadGoMarker[threadIndex] = false;
-                this->onTickEnded();
+                this->privateTickEnded();
                 this->syncGoFlag = false;
 
                 threadGoMarker[threadIndex] = true;

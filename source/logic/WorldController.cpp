@@ -95,7 +95,7 @@ void WorldController::onTickStated() {
     gameWorld->startStep();
 }
 
-void WorldController::processTick(int threadIndex) {
+void WorldController::processTick(int threadIndex, long long poolTick) {
     int startedHeight = (FieldCellsHeight / NumThreads) * threadIndex;
     int endHeight = (FieldCellsHeight / NumThreads) * (threadIndex + 1);
 
@@ -110,8 +110,12 @@ void WorldController::processTick(int threadIndex) {
             if (cell->isBot() && cell->getObjectPointer() != NULL) {
 
                 Bot* tmpObj = (Bot *)gameWorld->GetObjectLocalCoords(widthIndex, heightIndex);
-
+                if (tmpObj->lastUpdatedTick == poolTick) {
+                    continue;
+                }
                 this->ObjectTick(tmpObj);
+
+                tmpObj->lastUpdatedTick = poolTick;
                 //Sleep(10);
             }
         }
