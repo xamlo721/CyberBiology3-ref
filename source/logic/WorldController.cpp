@@ -31,10 +31,10 @@ void WorldController::ObjectTick(Bot* tmpObj) {
             Cell* visibleCell = cluster->getCellByLocalCoord(tmpObj->lookAt.x, tmpObj->lookAt.y);
 
             //Destination cell is empty
-            if (visibleCell->objectType == EnumObjectType::Empty) {
+            if (visibleCell->isEmpty()) {
                 //0 if empty
                 input.vision = 0.0f;
-            } else if (visibleCell->objectType == EnumObjectType::Bot)  {
+            } else if (visibleCell->isBot())  {
                     //0.5 if someone is in that cell
                     input.vision = 1.0f;
             }
@@ -49,20 +49,21 @@ void WorldController::ObjectTick(Bot* tmpObj) {
 
         //TODO: Сделать правила для вызова Actions и перевести их на автомат
 
-        /*
+        
         //Multiply first
+        
         if (tmpObj->actions.divide > 0) {
             //FIXME: Этот дурдом с созданием объектов решается статическим списком Action в классе бота
             DivideAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
         }
-        
+        /*
         //Then attack
         if (tmpObj->actions.attack > 0) {
             AttackAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
 
-        }
+        }*/
          
         //Rotate after
         if (tmpObj->actions.desired_rotation != (((Bot*)tmpObj)->direction * .1f)) {
@@ -80,7 +81,7 @@ void WorldController::ObjectTick(Bot* tmpObj) {
         if (tmpObj->actions.photosynthesis > 0) {
             PhotosintesisAction action;
             action.onActivate(((Bot*)tmpObj), cluster);
-        }*/
+        }
         
         
     }
@@ -91,7 +92,6 @@ void WorldController::ObjectTick(Bot* tmpObj) {
 std::mutex mutex;
 
 void WorldController::onTickStated() {
-    auto lck = std::scoped_lock{ mutex };
     gameWorld->startStep();
 }
 
@@ -107,17 +107,11 @@ void WorldController::processTick(int threadIndex) {
 
             Cell* cell = gameWorld->getCellPointer(widthIndex, heightIndex);
 
-            if (cell->objectType == EnumObjectType::Bot && cell->object != NULL) {
+            if (cell->isBot() && cell->getObjectPointer() != NULL) {
 
                 Bot* tmpObj = (Bot *)gameWorld->GetObjectLocalCoords(widthIndex, heightIndex);
 
-                if (tmpObj->x > 1000 || tmpObj->x < -1000) {
-                    throw WorldController();
-                }
-
-
-
-                ObjectTick(tmpObj);
+                this->ObjectTick(tmpObj);
                 //Sleep(10);
             }
         }

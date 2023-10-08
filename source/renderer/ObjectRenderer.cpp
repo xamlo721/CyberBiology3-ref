@@ -21,18 +21,20 @@ void ObjectRenderer::drawObjects(std::vector<Cell*> entityes, IObjectRenderer * 
     for (int i = 0; i < FieldCellsWidth; i++) {
         for (int j = 0; j < FieldCellsHeight; j++) {
             Cell* cell = World::INSTANCE()->world.worldMap[i][j];
+            cell->lock();
             drawOne(cell, worker);
+            cell->unlock();
         }
     }
 
 }
 
 void ObjectRenderer::drawOne(Cell* object, IObjectRenderer* worker) {
-    if (object->objectType == EnumObjectType::Bot) {
+    if (object->isBot()) {
 
-        if (object->object->isAlive) {
+        if (object->getObjectPointer()->isAlive) {
             //Draw function switch, based on selected render type
-            worker->draw(object->object);
+            worker->draw(object->getObjectPointer());
         }
 
     }

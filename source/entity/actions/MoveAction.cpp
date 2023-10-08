@@ -6,33 +6,23 @@ void MoveAction::onActivate(Bot* object, CellCluster* cluster) {
         object->isAlive = false;
         return;
     }
-    Point clusterLookAtCoords = validateBotLookAtCoordinates(object->lookAt);
     Point clusterBootCoords = Point(0, 0);
 
-    this->moveObject(object, clusterBootCoords, clusterLookAtCoords, cluster);
+    this->moveObject(object, clusterBootCoords, object->lookAt, cluster);
 
 
 }
 bool MoveAction::moveObject(Object* obj, Point fromPoint, Point toPoint, CellCluster* cluster) {
 
-    if (cluster->area[toPoint.x][toPoint.y]->objectType != EnumObjectType::Empty) {
+    if (!cluster->cell(toPoint.x, toPoint.y)->isEmpty()) {
         return false;
     }
 
-    if (obj->x > 254) {
-
-        int c;
-        c = toPoint.x;
-        toPoint.x = c;
-    }
-
     //Пометить, что теперь там нет бота
-    cluster->area[fromPoint.x][fromPoint.y]->objectType = EnumObjectType::Empty;
-    cluster->area[fromPoint.x][fromPoint.y]->object = NULL;
+    cluster->cell(fromPoint.x, fromPoint.y)->setEmpty();
 
     //Пометить, что теперь там бот
-    cluster->area[toPoint.x][toPoint.y]->objectType = EnumObjectType::Bot;
-    cluster->area[toPoint.x][toPoint.y]->object = obj;
+    cluster->cell(toPoint.x, toPoint.y)->setObject(obj);
 
     obj->x = (obj->x + toPoint.x) % (FieldCellsWidth);
     obj->y = (obj->y + toPoint.y) % (FieldCellsHeight);

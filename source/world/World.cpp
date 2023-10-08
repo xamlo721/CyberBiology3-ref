@@ -85,7 +85,7 @@ bool World::moveObject(Object* obj, int toX, int toY) {
     world.lockCell(toX, toY);
 
 
-    if (!world.isEmpty(toX, toY)) {
+    if (!world.getCellPointer(toX, toY)->isEmpty()) {
         this->unlockMap();
         world.unlockCell(toX, toY);
         return false;
@@ -137,9 +137,9 @@ void World::startStep() {
             for (int j = 0; j < FieldCellsHeight; j++) {
                 world.lockCell(i, j);
                 Object* obj = world.getObject(i, j);
-                if (world.isBot(i, j) && obj->isAlive == false) {
+                if (world.getCellPointer(i, j)->isBot() && obj->isAlive == false) {
                     world.setEmpty(i, j);
-                    delete obj;
+                    //delete obj;
 
                 }
                 world.unlockCell(i, j);
@@ -171,14 +171,8 @@ void World::stopStep() {
 }
 
 CellCluster* World::getLockedCluster(Object* obj) {
-    auto lck = std::scoped_lock{ clusterMutex };
+    //auto lck = std::scoped_lock{ clusterMutex };
 
-    if (obj->x == (FieldCellsWidth) || obj->y == (FieldCellsHeight)) {
-        int c;
-        c = 0;
-    }
-
-    this->lockMap();
 
     Cell* clusterArea[areaSize][areaSize];
 
@@ -198,8 +192,8 @@ CellCluster* World::getLockedCluster(Object* obj) {
         }
 
     }
+    this->lockMap();
     CellCluster* cluster = new CellCluster(clusterArea);
-
     this->unlockMap();
 
     return cluster;
@@ -208,7 +202,6 @@ CellCluster* World::getLockedCluster(Object* obj) {
 
 
 void World::RemoveAllObjects() {
-    auto lck = std::scoped_lock{ clusterMutex };
 
     for (int cx = 0; cx < FieldCellsWidth; ++cx) {
         for (int cy = 0; cy < FieldCellsHeight; ++cy) {
@@ -296,7 +289,7 @@ std::vector<Cell*> World::getObjectsForRenderer() {
 
         for (uint iy = 0; iy < FieldCellsHeight; ++iy) {
 
-            if (world.isBot(ix, iy)) {
+            if (world.getCellPointer(ix, iy)->isBot()) {
                 copyList.push_back(world.getCellPointer(ix, iy));
             }
 

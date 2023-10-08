@@ -2,7 +2,7 @@
 #include "../MyTypes.h"
 
 //Don't touch
-#define NumThreads 32
+constexpr int NumThreads = 32;
 
 class MyThreadLoop {
 
@@ -13,6 +13,7 @@ class MyThreadLoop {
         abool threadTerminated[NumThreads];
         abool terminateThreads = false;
         abool pauseThreads = false;
+        abool syncGoFlag = false;
 
     public:
 
@@ -43,20 +44,24 @@ class MyThreadLoop {
                 ///Синхронизация начала тика
                 threadGoMarker[threadIndex] = false;
                 this->onTickStated();
+                this->syncGoFlag = false;
+
                 threadGoMarker[threadIndex] = true;
                 waitAllThreads();
 
 
                 ///Синхронизация завершения тика
                 threadGoMarker[threadIndex] = false;
-
                 this->processTick(threadIndex);
+                this->syncGoFlag = false;
                 threadGoMarker[threadIndex] = true;
                 waitAllThreads();
 
 
                 threadGoMarker[threadIndex] = false;
                 this->onTickEnded();
+                this->syncGoFlag = false;
+
                 threadGoMarker[threadIndex] = true;
                 //Wait for threads to synchronize first time
                 waitAllThreads();
@@ -97,8 +102,10 @@ class MyThreadLoop {
                     }
                 }
 
-                if ((threadsReady == NumThreads) && (!pauseThreads))
+                if ((threadsReady == NumThreads) && (!pauseThreads) || this->syncGoFlag ) {
+                    this->syncGoFlag = true;
                     break;
+                }
                 Sleep(1);
                 std::this_thread::yield();
 

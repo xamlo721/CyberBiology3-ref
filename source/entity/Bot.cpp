@@ -66,7 +66,7 @@ BrainOutput Bot::think(BrainInput input) {
 
 void Bot::tick() {
 
-    ++lifetime;
+    lifetime++;
 
     energy -= EveryTickEnergyPenalty;
 

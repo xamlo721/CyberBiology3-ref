@@ -28,67 +28,38 @@ class PrivateSyncWorld {
 
         void setWall(int xCoord, int yCoord) {
             auto lck = std::unique_lock{ worldMutex };
-            worldMap[xCoord][yCoord]->objectType = EnumObjectType::WorldBorder;
+            worldMap[xCoord][yCoord]->setWall();
 
         }
         void setEmpty(int xCoord, int yCoord) {
             auto lck = std::unique_lock{ worldMutex };
-            worldMap[xCoord][yCoord]->objectType = EnumObjectType::Empty;
-            worldMap[xCoord][yCoord]->object = NULL;
+            worldMap[xCoord][yCoord]->setEmpty();
         }
         void setObject(int xCoord, int yCoord, Object * obj) {
             auto lck = std::unique_lock{ worldMutex };
-            worldMap[xCoord][yCoord]->objectType = EnumObjectType::Bot;
-            worldMap[xCoord][yCoord]->object = obj;
+            worldMap[xCoord][yCoord]->setObject(obj);
         }
 
 
 
         void lockCell(int xCoord, int yCoord) {
-            auto lck = std::unique_lock{ worldMutex };
-            while (worldMap[xCoord][yCoord]->isLocked) {
-                Sleep(1);
-                std::this_thread::yield();
-            }
-            worldMap[xCoord][yCoord]->isLocked = true;
+            worldMap[xCoord][yCoord]->lock();
         }
+
         void unlockCell(int xCoord, int yCoord) {
-            auto lck = std::shared_lock{ worldMutex };
-
-            worldMap[xCoord][yCoord]->isLocked = false;
-
+            worldMap[xCoord][yCoord]->unlock();
         }
-        bool isCellLocked(int xCoord, int yCoord) {
-            auto lck = std::unique_lock{ worldMutex };
-
-            return worldMap[xCoord][xCoord]->isLocked;
-        }
-        
 
 
-
-        bool isEmpty(int xCoord, int yCoord) {
-            auto lck = std::shared_lock{ worldMutex };
-            return worldMap[xCoord][yCoord]->objectType == EnumObjectType::Empty;
-        }
-        bool isBorder(int xCoord, int yCoord) {
-            auto lck = std::shared_lock{ worldMutex };
-            return worldMap[xCoord][yCoord]->objectType == EnumObjectType::WorldBorder;
-
-        }
-        bool isBot(int xCoord, int yCoord) {
-            auto lck = std::shared_lock{ worldMutex };
-            return worldMap[xCoord][yCoord]->objectType == EnumObjectType::Bot;
-        }
 
 
         Object* getObject(int xCoord, int yCoord) {
-            auto lck = std::shared_lock{ worldMutex };
-            return worldMap[xCoord][yCoord]->object;
+            //auto lck = std::shared_lock{ worldMutex };
+            return worldMap[xCoord][yCoord]->getObjectPointer();
         }
 
         Cell* getCellPointer(int xCoord, int yCoord) {
-            auto lck = std::shared_lock{ worldMutex };
+            //auto lck = std::shared_lock{ worldMutex };
             return worldMap[xCoord][yCoord];
         }
 

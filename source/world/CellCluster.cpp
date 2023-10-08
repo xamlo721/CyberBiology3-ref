@@ -5,38 +5,19 @@ CellCluster::CellCluster(Cell* area[areaSize][areaSize]) {
     for (int cx = 0; cx < areaSize; ++cx) {
         for (int cy = 0; cy < areaSize; ++cy) {
             this->area[cx][cy] = area[cx][cy];
+            this->area[cx][cy]->lock(); //Collision detected - wait another thread
         }
-    }
-
-
-    for (int cx = 0; cx < areaSize; ++cx) {
-        for (int cy = 0; cy < areaSize; ++cy) {
-
-
-            //Collision detected - wait another thread
-            while (area[cx][cy]->isLocked) {
-                Sleep(1);
-                std::this_thread::yield();
-            }
-
-            area[cx][cy]->isLocked = true;
-        }
-
     }
 }
 
 CellCluster::~CellCluster() {
 
-
     for (int cx = 0; cx < areaSize; ++cx) {
-
         for (int cy = 0; cy < areaSize; ++cy) {
-
-            area[cx][cy]->isLocked = false;
-
+            area[cx][cy]->unlock();
         }
-
     }
+
 }
 
 
@@ -54,7 +35,7 @@ std::list<Cell*> CellCluster::getObjectsArround() {
                 continue;
             }
 
-            if (area[cx][cy]->objectType == EnumObjectType::Bot) {
+            if (area[cx][cy]->isBot()) {
                 toRet.push_back(area[cx][cy]);
             }
             
@@ -74,7 +55,7 @@ int CellCluster::getEmptyCellCount() {
 
         for (int cy = 0; cy < areaSize; ++cy) {
 
-            if (area[cx][cy]->objectType == EnumObjectType::Empty) {
+            if (area[cx][cy]->isEmpty()) {
                 ++toRet;
             }
         }
@@ -96,10 +77,10 @@ Point CellCluster::FindFreeNeighbourCell() {
     Point tmpArray[areaSize * areaSize];
     int i = 0;
 
-    for (int cx = 0; cx < areaSize - 1; ++cx) {
-        for (int cy = 0; cy < areaSize - 1; ++cy) {
+    for (int cx = -visibleDistance, arrayX = 0; cx < 2 * visibleDistance; cx++, arrayX++) {
+        for (int cy = -visibleDistance, arrayY = 0; cy < 2 * visibleDistance; cy++, arrayY++) {
 
-            if (area[cx][cy]->object == NULL && area[cx][cy]->objectType == EnumObjectType::Empty) {
+            if (area[arrayX][arrayY]->isEmpty()) {
                 tmpArray[i++].Set(cx, cy);
             }
 
@@ -112,7 +93,7 @@ Point CellCluster::FindFreeNeighbourCell() {
     }
 
     //No free cells nearby
-    return { -1, -1 };
+    return { 0, 0 };
 }
 
 
@@ -133,7 +114,7 @@ Point CellCluster::FindRandomNeighbourBot(int X, int Y) {
     for (int cx = -1; cx < 2; ++cx) {
         for (int cy = -1; cy < 2; ++cy) {
 
-            if (area[cx][cy] == NULL) {//Bug
+            if (area[cx][cy]->isEmpty()) {
                 tmpArray[i++].Set(cx, cy);
             }
 

@@ -15,12 +15,12 @@ PrivateSyncWorld::PrivateSyncWorld() {
 
 bool PrivateSyncWorld::removeObjectUnsafetly(int globalXCoord, int globalYCoord) {
 
-    if (isEmpty(globalXCoord, globalYCoord)) {
+    if (getCellPointer(globalXCoord, globalYCoord)->isEmpty()) {
         return false;
     }
 
-    if (isBot(globalXCoord, globalYCoord)) {
-        Object* tmpO = worldMap[globalXCoord][globalYCoord]->object;
+    if (getCellPointer(globalXCoord, globalYCoord)->isBot()) {
+        Object* tmpO = worldMap[globalXCoord][globalYCoord]->getObjectPointer();
 
         delete tmpO;
 
@@ -35,7 +35,7 @@ bool PrivateSyncWorld::removeObjectUnsafetly(int globalXCoord, int globalYCoord)
 bool PrivateSyncWorld::addObjectUnsafetly(Object* obj) {
 
     //Если там занято, о чём речь?
-    if (!isEmpty(obj->x, obj->y)) {
+    if (!getCellPointer(obj->x, obj->y)->isEmpty()) {
         return false;
     }
 

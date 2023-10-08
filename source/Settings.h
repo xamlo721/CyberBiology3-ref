@@ -19,7 +19,7 @@
 
 #define WindowCaption "CyberBio v1.2.1"
 
-#define WindowWidth 1340
+#define WindowWidth 1340*2
 #define WindowHeight 1080
 
 #define BackgroundColorFloat 0.0f,0.0f,0.0f,255.0f
@@ -105,15 +105,16 @@
 #define FieldX InterfaceBorder
 #define FieldY InterfaceBorder
 
-#define FieldCellsWidth 16*2*1		//ƒолжно делитьс€ на 8 без остатка если нужны 4 потока! » на 16 без остатка если 8 потоков!
-#define FieldCellsHeight 32*1
+//ƒолжно делитьс€ на 32 без остатка если нужны 4 потока! » на 16 без остатка если 8 потоков!
+constexpr int FieldCellsWidth = 32 * 32 * 1;	///32*1	
+constexpr int FieldCellsHeight = 32 * 4;    /// 32*1
 
-#define FieldRenderCellsWidth 32*1
+constexpr int FieldRenderCellsWidth = 32 * 8; //202 ///32*1
 
-#define FieldCellSize 32
-#define FieldCellSizeHalf FieldCellSize/2
-#define FieldWidth FieldCellSize*FieldRenderCellsWidth
-#define FieldHeight FieldCellSize*FieldCellsHeight
+constexpr int FieldCellSize = 8; //8 ///32
+constexpr int FieldCellSizeHalf = FieldCellSize / 2;
+constexpr int FieldWidth = FieldCellSize * FieldRenderCellsWidth;
+constexpr int FieldHeight = FieldCellSize * FieldCellsHeight;
 
 //-----------------------------------------------------------------
 
@@ -218,18 +219,18 @@
 //-----------------------------------------------------------------
 //Neural net
 
-#define NeuronsInLayer 5
-#define NumNeuronLayers 6
+#define NeuronsInLayer 5 //5
+#define NumNeuronLayers 6 //6
 #define NeuronOutputLayerIndex (NumNeuronLayers-1)
 #define NeuronInputLayerIndex 0
 
 //#define FullyConnected
 
-#define MaxConnections_Basic 4
-#define MaxConnections_Input 4
+#define MaxConnections_Basic 4 // 4
+#define MaxConnections_Input 4 // 4
 #define MaxConnections_Random 1
-#define MaxConnections_RadialBasis 4
-#define MaxConnections_Memory 4
+#define MaxConnections_RadialBasis 4 // 4
+#define MaxConnections_Memory 4  // 4
 
 #define UseMemoryNeuron
 #define UseRandomNeuron
