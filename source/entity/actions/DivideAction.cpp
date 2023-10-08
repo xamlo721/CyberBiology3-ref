@@ -10,21 +10,22 @@ void DivideAction::onActivate(Bot* object, CellCluster* cluster) {
 
     Point freeSpace = cluster->FindFreeNeighbourCell();
 
-    if (freeSpace.x != 0 && freeSpace.y != 0) {
-        object->TakeEnergy(object->energy / 2 + GiveBirthCost);
-        Point clusterBootCoords = Point(0, 0);
-
-        cluster->cell(freeSpace)->setObject(new Bot(freeSpace.x + object->x, freeSpace.y + object->y, object->energy, object, RandomPercent(10)));
+    if (freeSpace.x == 0 && freeSpace.y == 0) {
 
         return;
     }
+
+    object->TakeEnergy(object->energy / 2 + GiveBirthCost);
+    Point clusterBootCoords = Point(0, 0);
+
+    cluster->cell(freeSpace)->setObject(new Bot(freeSpace.x + object->x, freeSpace.y + object->y, object->energy, object, RandomPercent(10)));
 
 
     if (object->energy <= 0) {
         object->isAlive = false;
         return;
     }
-
+        
 }
 
 
