@@ -23,7 +23,7 @@ class Cell {
 
 		//Ёнерги€ на клетке
 		Uint8 energy;
-		std::shared_mutex isLocked;
+		abool isLocked;
 
 	public:
 
@@ -41,12 +41,16 @@ class Cell {
 			object = object;
 		}
 
-		void lock() {
-			isLocked.lock();
+		inline void lock() {
+			while (isLocked) {
+				Sleep(1);
+				std::this_thread::yield();
+			}
+			isLocked = true;
 		}
 
-		void unlock() {
-			isLocked.unlock();
+		inline void unlock() {
+			isLocked = false;
 		}
 
 		// то стоит на клетке
