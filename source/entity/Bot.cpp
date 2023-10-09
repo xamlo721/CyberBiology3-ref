@@ -12,6 +12,7 @@ Bot::Bot(int X, int Y, uint Energy, Bot* prototype, bool mutate) :Object(X, Y, E
 
     //Create active brain
     activeBrain.Clone(&initialBrain);
+    activeBrain.Mutate();
     activeBrain.Optimize();
 }
 
