@@ -107,10 +107,23 @@ void WorldController::processTick(int threadIndex, long long poolTick) {
 
             Cell* cell = gameWorld->getCellPointer(widthIndex, heightIndex);
 
+            //if (cell->isBot() && cell->getObjectPointer()->isAlive == false) {
+
+            //    continue;
+            //}
+
             if (cell->isBot() && cell->getObjectPointer() != NULL) {
 
                 Bot* tmpObj = (Bot *)gameWorld->GetObjectLocalCoords(widthIndex, heightIndex);
                 if (tmpObj->lastUpdatedTick == poolTick) {
+                    continue;
+                }
+
+                if (tmpObj->isAlive == false) {
+                    cell->lock();
+                    cell->setEmpty();
+                    delete tmpObj;
+                    cell->unlock();
                     continue;
                 }
                 this->ObjectTick(tmpObj);

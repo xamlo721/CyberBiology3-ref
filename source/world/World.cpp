@@ -89,7 +89,7 @@ bool World::moveObject(Object* obj, int toX, int toY) {
         world.unlockCell(toX, toY);
         return false;
     }
-    
+     
     world.lockCell(obj->x, obj->y);
 
 
@@ -120,33 +120,33 @@ bool World::moveObject(Object* obj, int toX, int toY) {
 
 //Swap entityes and tempEntityes
 void World::startStep() {
-    auto lck = std::scoped_lock{ clusterMutex };
+    //auto lck = std::scoped_lock{ clusterMutex };
 
 
 
 
-    this->lockMap();
+    //this->lockMap();
 
-    {//check deads
+    //{//check deads
 
-        for (int i = 0; i < FieldCellsWidth; i++) {
-            for (int j = 0; j < FieldCellsHeight; j++) {
-                world.lockCell(i, j);
-                Object* obj = world.getObject(i, j);
-                if (world.getCellPointer(i, j)->isBot() && obj->isAlive == false) {
-                    world.setEmpty(i, j);
-                    delete obj;
+    //    for (int i = 0; i < FieldCellsWidth; i++) {
+    //        for (int j = 0; j < FieldCellsHeight; j++) {
+    //            world.lockCell(i, j);
+    //            Object* obj = world.getObject(i, j);
+    //            if (world.getCellPointer(i, j)->isBot() && obj->isAlive == false) {
+    //                world.setEmpty(i, j);
+    //                delete obj;
 
-                }
-                world.unlockCell(i, j);
+    //            }
+    //            world.unlockCell(i, j);
 
-            }
-        }
-    }
-    copyList.clear();
+    //        }
+    //    }
+    //}
+    //copyList.clear();
 
 
-    this->unlockMap();
+    //this->unlockMap();
 
 
 }
