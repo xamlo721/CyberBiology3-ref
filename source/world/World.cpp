@@ -173,9 +173,9 @@ CellCluster* World::getLockedCluster(Object* obj) {
         }
 
     }
-    this->lockMap();
+    //this->lockMap();
     CellCluster* cluster = new CellCluster(clusterArea);
-    this->unlockMap();
+    //this->unlockMap();
 
     return cluster;
 }
@@ -262,21 +262,21 @@ bool World::ValidateObjectExistance(Object* obj) {
 }
 
 std::vector<Cell*> World::getObjectsForRenderer() {
-    auto lck = std::scoped_lock{ clusterMutex };
+    //auto lck = std::scoped_lock{ clusterMutex };
 
-    copyList.clear();
+    //copyList.clear();
 
-    for (uint ix = 0; ix < FieldCellsWidth; ++ix) {
+    //for (uint ix = 0; ix < FieldCellsWidth; ++ix) {
 
-        for (uint iy = 0; iy < FieldCellsHeight; ++iy) {
+    //    for (uint iy = 0; iy < FieldCellsHeight; ++iy) {
 
-            if (world.getCellPointer(ix, iy)->isBot()) {
-                copyList.push_back(world.getCellPointer(ix, iy));
-            }
+    //        if (world.getCellPointer(ix, iy)->isBot()) {
+    //            copyList.push_back(world.getCellPointer(ix, iy));
+    //        }
 
-        }
+    //    }
 
-    }
+    //}
 
     return copyList;
 }

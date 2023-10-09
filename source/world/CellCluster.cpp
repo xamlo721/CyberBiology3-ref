@@ -2,21 +2,58 @@
 
 CellCluster::CellCluster(Cell* area[areaSize][areaSize]) {
 
-    for (int cx = 0; cx < areaSize; ++cx) {
-        for (int cy = 0; cy < areaSize; ++cy) {
-            this->area[cx][cy] = area[cx][cy];
-            this->area[cx][cy]->lock(); //Collision detected - wait another thread
-        }
-    }
+    this->area[0][0] = area[0][0];
+    this->area[0][1] = area[0][1];
+    this->area[0][2] = area[0][2];
+
+    this->area[1][0] = area[1][0];
+    this->area[1][1] = area[1][1];
+    this->area[1][2] = area[1][2];
+
+    this->area[2][0] = area[2][0];
+    this->area[2][1] = area[2][1];
+    this->area[2][2] = area[2][2];
+
+    this->area[0][0]->lock();
+    this->area[0][1]->lock();
+    this->area[0][2]->lock();
+
+    this->area[1][0]->lock();
+    this->area[1][1]->lock();
+    this->area[1][2]->lock();
+
+    this->area[2][0]->lock();
+    this->area[2][1]->lock();
+    this->area[2][2]->lock();
+
+    //for (int cx = 0; cx < areaSize; ++cx) {
+    //    for (int cy = 0; cy < areaSize; ++cy) {
+    //        this->area[cx][cy] = area[cx][cy];
+    //        this->area[cx][cy]->lock(); //Collision detected - wait another thread
+    //    }
+    //}
 }
 
 CellCluster::~CellCluster() {
 
-    for (int cx = 0; cx < areaSize; ++cx) {
-        for (int cy = 0; cy < areaSize; ++cy) {
-            area[cx][cy]->unlock();
-        }
-    }
+
+    area[0][0]->unlock();
+    area[0][1]->unlock();
+    area[0][2]->unlock();
+
+    area[1][0]->unlock();
+    area[1][1]->unlock();
+    area[1][2]->unlock();
+
+    area[2][0]->unlock();
+    area[2][1]->unlock();
+    area[2][2]->unlock();
+
+    //for (int cx = 0; cx < areaSize; ++cx) {
+    //    for (int cy = 0; cy < areaSize; ++cy) {
+    //     area[cx][cy]->unlock();
+    //    }
+    //}
 
 }
 
