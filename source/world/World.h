@@ -31,7 +31,7 @@ class World {
 
         std::vector<Cell*> copyList;
 
-        std::mutex clusterMutex;
+        std::shared_mutex clusterMutex;
         std::mutex mapMutex;
 
         //Needed to calculate number of active objects and bots (calculated on every frame)
@@ -84,8 +84,6 @@ class World {
 
 
         void startStep();
-
-        void stopStep();
 
 
         //Is cell out if bounds?

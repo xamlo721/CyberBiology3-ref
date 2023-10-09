@@ -43,7 +43,7 @@ bool World::addObjectSafetly(Object* obj) {
     world.lockCell(obj->x, obj->y);
 
     this->unlockMap();
-
+    
     //processing
     bool returnValue = world.addObjectUnsafetly(obj);
 
@@ -135,7 +135,7 @@ void World::startStep() {
                 Object* obj = world.getObject(i, j);
                 if (world.getCellPointer(i, j)->isBot() && obj->isAlive == false) {
                     world.setEmpty(i, j);
-                    //delete obj;
+                    delete obj;
 
                 }
                 world.unlockCell(i, j);
@@ -143,22 +143,11 @@ void World::startStep() {
             }
         }
     }
-
-
-    this->unlockMap();
-
-
-}
-
-void World::stopStep() {
-    auto lck = std::scoped_lock{ clusterMutex };
-
-
-    this->lockMap();
-
     copyList.clear();
 
+
     this->unlockMap();
+
 
 }
 

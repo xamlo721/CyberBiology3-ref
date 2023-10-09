@@ -123,8 +123,7 @@ void WorldController::processTick(int threadIndex, long long poolTick) {
 }
 
 void WorldController::onTickEnded() {
-    auto lck = std::scoped_lock{ mutex };
-    gameWorld->stopStep();
+
 }
 
 

@@ -105,13 +105,16 @@
 #define FieldX InterfaceBorder
 #define FieldY InterfaceBorder
 
+//Размер 1 клетки в пикселях
+constexpr int FieldCellSize = 2; //8 ///32
+
+
 //Должно делиться на 32 без остатка если нужны 4 потока! И на 16 без остатка если 8 потоков!
-constexpr int FieldCellsWidth = 32 * 32 * 1;	///32*1	
-constexpr int FieldCellsHeight = 32 * 4;    /// 32*1
+constexpr int FieldCellsWidth = FieldCellSize * 32 * 16 * 1;	///32*1	
+constexpr int FieldCellsHeight = FieldCellSize * 32 * 8;    /// 32*1
 
-constexpr int FieldRenderCellsWidth = 32 * 8; //202 ///32*1
+constexpr int FieldRenderCellsWidth = FieldCellSize * 32 * 16; //202 ///32*1
 
-constexpr int FieldCellSize = 8; //8 ///32
 constexpr int FieldCellSizeHalf = FieldCellSize / 2;
 constexpr int FieldWidth = FieldCellSize * FieldRenderCellsWidth;
 constexpr int FieldHeight = FieldCellSize * FieldCellsHeight;

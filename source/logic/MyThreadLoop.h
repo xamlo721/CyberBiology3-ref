@@ -8,16 +8,16 @@ class MyThreadLoop {
 
     private:
         //threads
-        abool threadGoMarker[NumThreads];
+        long long threadGoMarker[NumThreads];
         std::thread* threads[NumThreads];
         abool threadTerminated[NumThreads];
         abool terminateThreads = false;
         abool pauseThreads = false;
-        abool syncGoFlag = false;
 
-        long long poolTick = 0;
+        std::atomic_int64_t poolTick = 0;
 
-        abool isProcessing = false;
+        long long isProcessing = false;
+        std::mutex syncMutex;
 
     public:
 
@@ -39,13 +39,15 @@ class MyThreadLoop {
         virtual void onTickEnded() = 0;
 
         void privateTickStated() {
+            auto lck = std::lock_guard{ syncMutex };
+
             if (isProcessing) {
                 return;
             }
             isProcessing = true;
 
-            poolTick++;
             this->onTickStated();
+            poolTick++;
 
         }
 
@@ -54,41 +56,29 @@ class MyThreadLoop {
             if (!isProcessing) {
                 return;
             }
-            isProcessing = false;
 
             this->onTickEnded();
         }
 
         void tick_multiple_threads(int threadIndex) {
 
-            threadGoMarker[threadIndex] = true;
-            waitAllThreads();
+            threadGoMarker[threadIndex] = poolTick;
+            waitAllThreads(threadIndex);
 
             while (!terminateThreads) {
-
                 ///Синхронизация начала тика
-                threadGoMarker[threadIndex] = false;
-                this->syncGoFlag = false;
+
                 privateTickStated();
-                threadGoMarker[threadIndex] = true;
-                waitAllThreads();
+                threadGoMarker[threadIndex]++;
+                //waitAllThreads(threadIndex);
 
 
-                ///Синхронизация завершения тика
-                threadGoMarker[threadIndex] = false;
                 this->processTick(threadIndex, poolTick);
-                this->syncGoFlag = false;
-                threadGoMarker[threadIndex] = true;
-                waitAllThreads();
 
+                poolTick = threadGoMarker[threadIndex];
+                waitAllThreads(threadIndex);
 
-                threadGoMarker[threadIndex] = false;
-                this->privateTickEnded();
-                this->syncGoFlag = false;
-
-                threadGoMarker[threadIndex] = true;
-                //Wait for threads to synchronize first time
-                waitAllThreads();
+                isProcessing = false;
 
             }
 
@@ -99,7 +89,7 @@ class MyThreadLoop {
         void StartThreads() {
             //Start threads
             for (int i = 0; i < NumThreads; i++) {
-                threadGoMarker[i] = true;
+                threadGoMarker[i] = poolTick;
             }
         }
 
@@ -112,22 +102,26 @@ class MyThreadLoop {
         }
 
         //Wait for all threads to finish their calculations
-        void waitAllThreads() {
+        void waitAllThreads(int threadIndex) {
 
             uint threadsReady;
 
+
             for (;;) {
+
+                if (threadGoMarker[threadIndex] < poolTick) {
+                    return;
+                }
 
                 threadsReady = 0;
 
                 for (int i = 0; i < NumThreads; i++) {
-                    if (threadGoMarker[i] == true) {
+                    if (threadGoMarker[i] >= poolTick) {
                         threadsReady++;
                     }
                 }
 
-                if ((threadsReady == NumThreads) && (!pauseThreads) || this->syncGoFlag ) {
-                    this->syncGoFlag = true;
+                if ((threadsReady == NumThreads) && (!pauseThreads)) {
                     break;
                 }
                 Sleep(1);
