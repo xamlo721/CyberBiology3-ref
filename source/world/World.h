@@ -76,7 +76,7 @@ class World {
         //thread-safetly
         bool moveObject(Object* obj, int toX, int toY);
 
-        CellCluster* getLockedCluster(Object * obj, int threadIndex);
+        CellCluster* getLockedCluster(int globalXCoord, int globalYCoord, int threadIndex);
 
         //Service
 

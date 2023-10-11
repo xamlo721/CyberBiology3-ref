@@ -14,77 +14,107 @@ WorldController::WorldController() : MyThreadLoop(NumThreads) {
     gameWorld = World::INSTANCE();
 }
 
-void WorldController::ObjectTick(Bot* tmpObj, int threadIndex) {
-    
-    //Object destroyed
-    if (!tmpObj->isAlive) {
+inline void WorldController::tickCluster(CellCluster* cluster, Cell* ticableCell, long long poolTick) {
+
+    if (!ticableCell->isBot()) {
+        return;
+    }
+
+    if (ticableCell->getObjectPointer() == NULL) {
+        return;
+    }
+
+    Bot* tmpObj = (Bot*)ticableCell->getObjectPointer();//Небезопасный каст
+
+    if (tmpObj->lastUpdatedTick == poolTick) {
+        return;
+    }
+
+    tmpObj->lastUpdatedTick = poolTick;
+
+    if (tmpObj->isAlive == false) {
+        ticableCell->setEmpty();
+        delete tmpObj;
+        return;
+    }
+    tmpObj->tick();
+
+    BrainInput input;
+    {
+        Cell* visibleCell = cluster->getCellByLocalCoord(tmpObj->lookAt.x, tmpObj->lookAt.y);
+
+        //Destination cell is empty
+        if (visibleCell->isEmpty()) {
+            //0 if empty
+            input.vision = 0.0f;
+        }
+        else if (visibleCell->isBot()) {
+            //0.5 if someone is in that cell
+            input.vision = 1.0f;
+        }
+
+        input.age = (tmpObj->lifetime * 1.0f) / (MaxBotLifetime * 1.0f);
+
+        //input.rotation = (actions.desired_rotation == (direction * .1f))?1.0f:0.0f;
+        input.rotation = (tmpObj->direction * 1.0f) / 7.0f;
+    }
+    tmpObj->actions = tmpObj->think(input);
+
+
+    //TODO: Сделать правила для вызова Actions и перевести их на автомат
+
+
+    //Multiply first
+
+    if (tmpObj->actions.divide > 0) {
+        //FIXME: Этот дурдом с созданием объектов решается статическим списком Action в классе бота
+        DivideAction action;
+        action.onActivate(((Bot*)tmpObj), cluster);
+    }
+
+    //Then attack
+    if (tmpObj->actions.attack > 0) {
+        AttackAction action;
+        action.onActivate(((Bot*)tmpObj), cluster);
+
+    }
+
+    //Rotate after
+    if (tmpObj->actions.desired_rotation != (((Bot*)tmpObj)->direction * .1f)) {
+        RotateAction action;
+        action.onActivate(((Bot*)tmpObj), cluster);
+    }
+
+    //Move
+    if (tmpObj->actions.move > 0) {
+        MoveAction action;
+        action.onActivate(((Bot*)tmpObj), cluster);
+    }
+
+    //Photosynthesis    
+    if (tmpObj->actions.photosynthesis > 0) {
+        PhotosintesisAction action;
+        action.onActivate(((Bot*)tmpObj), cluster);
+    }
+
+
+}
+
+inline void WorldController::tickCell(Cell * ticableCell, int threadIndex, long long poolTick, int widthIndex, int heightIndex) {
+
+
+    if (!ticableCell->isBot()) {
+        return;
+    }
+
+    if (ticableCell->getObjectPointer() == NULL) {
         return;
     }
     
-    CellCluster* cluster = this->gameWorld->getLockedCluster(tmpObj, threadIndex);
-    {
+    CellCluster* cluster = this->gameWorld->getLockedCluster(widthIndex, heightIndex, threadIndex);
 
-        tmpObj->tick();
+    this->tickCluster(cluster, ticableCell, poolTick);
 
-        BrainInput input;
-        {
-            Cell* visibleCell = cluster->getCellByLocalCoord(tmpObj->lookAt.x, tmpObj->lookAt.y);
-
-            //Destination cell is empty
-            if (visibleCell->isEmpty()) {
-                //0 if empty
-                input.vision = 0.0f;
-            } else if (visibleCell->isBot())  {
-                    //0.5 if someone is in that cell
-                    input.vision = 1.0f;
-            }
-
-            input.age = (tmpObj->lifetime * 1.0f) / (MaxBotLifetime * 1.0f);
-
-            //input.rotation = (actions.desired_rotation == (direction * .1f))?1.0f:0.0f;
-            input.rotation = (tmpObj->direction * 1.0f) / 7.0f;
-        }
-        tmpObj->actions = tmpObj->think(input);
-
-
-        //TODO: Сделать правила для вызова Actions и перевести их на автомат
-
-        
-        //Multiply first
-        
-        if (tmpObj->actions.divide > 0) {
-            //FIXME: Этот дурдом с созданием объектов решается статическим списком Action в классе бота
-            DivideAction action;
-            action.onActivate(((Bot*)tmpObj), cluster);
-        }
-        /*
-        //Then attack
-        if (tmpObj->actions.attack > 0) {
-            AttackAction action;
-            action.onActivate(((Bot*)tmpObj), cluster);
-
-        }*/
-         
-        //Rotate after
-        if (tmpObj->actions.desired_rotation != (((Bot*)tmpObj)->direction * .1f)) {
-            RotateAction action;
-            action.onActivate(((Bot*)tmpObj), cluster);
-        }
-        
-        //Move
-        if (tmpObj->actions.move > 0) {
-            MoveAction action;
-            action.onActivate(((Bot*)tmpObj), cluster);
-        }
-        
-        //Photosynthesis    
-        if (tmpObj->actions.photosynthesis > 0) {
-            PhotosintesisAction action;
-            action.onActivate(((Bot*)tmpObj), cluster);
-        }
-        
-        
-    }
     cluster->unlock();
     //delete cluster; //Они теперь в пуле и их нельзя удалять
 
@@ -126,7 +156,7 @@ void WorldController::processTick(int threadIndex, long long poolTick) {
                         cell->unlock();
                         continue;
                     }
-                    this->ObjectTick(tmpObj);
+                    this->tickCell(tmpObj);
 
                     tmpObj->lastUpdatedTick = poolTick;
                     //Sleep(10);
@@ -150,31 +180,7 @@ void WorldController::processTick(int threadIndex, long long poolTick) {
 
 
             Cell* cell = gameWorld->getCellPointer(widthIndex, heightIndex);
-
-            //if (cell->isBot() && cell->getObjectPointer()->isAlive == false) {
-
-            //    continue;
-            //}
-
-            if (cell->isBot() && cell->getObjectPointer() != NULL) {
-
-                Bot* tmpObj = (Bot *)gameWorld->GetObjectLocalCoords(widthIndex, heightIndex);
-                if (tmpObj->lastUpdatedTick == poolTick) {
-                    continue;
-                }
-
-                if (tmpObj->isAlive == false) {
-                    cell->lock();
-                    cell->setEmpty();
-                    delete tmpObj;
-                    cell->unlock();
-                    continue;
-                }
-                this->ObjectTick(tmpObj, threadIndex);
-
-                tmpObj->lastUpdatedTick = poolTick;
-                //Sleep(10);
-            }
+            this->tickCell(cell, threadIndex, poolTick, widthIndex, heightIndex);
         }
     }
 }

@@ -162,7 +162,7 @@ void World::startStep() {
 
 }
 
-CellCluster* World::getLockedCluster(Object* obj, int threadIndex) {
+CellCluster* World::getLockedCluster(int globalXCoord, int globalYCoord, int threadIndex) {
     //auto lck = std::scoped_lock{ clusterMutex };
 
 
@@ -173,13 +173,7 @@ CellCluster* World::getLockedCluster(Object* obj, int threadIndex) {
 
         //-1 to +1
         for (int nJ = 0, j = - 1; j <= 1; nJ++, j++) {
-
-            //int validateXCoord = (obj->x + i) % (FieldCellsWidth);
-            //int validateYCoord = (obj->y + j) % (FieldCellsHeight);
-            //Cell* pCell = world.getCellPointer(validateXCoord, validateYCoord);
-            
-            Cell* pCell = world.getCellPointer((obj->x + i), (obj->y + j));
-
+            Cell* pCell = world.getCellPointer((globalXCoord + i), (globalYCoord + j));
             clusterArea[nI][nJ] = pCell;
         }
 
