@@ -7,7 +7,18 @@ World* World::instance = 0;
 
 World::World() {
     this->generateWorldBorder();
+    for (int i = 0; i < NumThreads; i++) {
+        this->clusterPool[i] = new CellCluster();
+    }
+
 }
+
+World::~World() {
+    for (int i = 0; i < NumThreads; i++) {
+        delete this->clusterPool[i];
+    }
+}
+
 
 inline void World::lockMap() {
     mapMutex.lock();
@@ -151,7 +162,7 @@ void World::startStep() {
 
 }
 
-CellCluster* World::getLockedCluster(Object* obj) {
+CellCluster* World::getLockedCluster(Object* obj, int threadIndex) {
     //auto lck = std::scoped_lock{ clusterMutex };
 
 
@@ -174,7 +185,8 @@ CellCluster* World::getLockedCluster(Object* obj) {
 
     }
     //this->lockMap();
-    CellCluster* cluster = new CellCluster(clusterArea);
+    CellCluster* cluster = this->clusterPool[threadIndex];
+    cluster->lock(clusterArea);
     //this->unlockMap();
 
     return cluster;

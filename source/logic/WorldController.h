@@ -48,7 +48,7 @@ class WorldController : public virtual MyThreadLoop {
         void tick(uint thisFrame);
 
         //Tick function for every object
-        void ObjectTick(Bot* tmpObj);
+        void ObjectTick(Bot* tmpObj, int threadIndex);
 
         //Transform absolute screen coords to cell position on field
         Point ScreenCoordsToLocal(int X, int Y);

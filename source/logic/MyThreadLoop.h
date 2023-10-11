@@ -1,8 +1,8 @@
 #pragma once
+
+#include "../Settings.h"
 #include "../MyTypes.h"
 
-//Don't touch
-constexpr int NumThreads = 32;
 
 class MyThreadLoop {
 

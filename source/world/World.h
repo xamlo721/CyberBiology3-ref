@@ -34,6 +34,8 @@ class World {
         std::shared_mutex clusterMutex;
         std::mutex mapMutex;
 
+        CellCluster* clusterPool[NumThreads];
+
         //Needed to calculate number of active objects and bots (calculated on every frame)
 
     public:
@@ -53,6 +55,7 @@ class World {
         FieldDynamicParams params;
 
         World();
+        ~World();
 
         void generateWorldBorder();
 
@@ -73,7 +76,7 @@ class World {
         //thread-safetly
         bool moveObject(Object* obj, int toX, int toY);
 
-        CellCluster* getLockedCluster(Object * obj);
+        CellCluster* getLockedCluster(Object * obj, int threadIndex);
 
         //Service
 

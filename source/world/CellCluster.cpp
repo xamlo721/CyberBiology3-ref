@@ -1,6 +1,30 @@
 #include "CellCluster.h"
 
-CellCluster::CellCluster(Cell* area[areaSize][areaSize]) {
+CellCluster::CellCluster() {
+
+
+
+    //for (int cx = 0; cx < areaSize; ++cx) {
+    //    for (int cy = 0; cy < areaSize; ++cy) {
+    //        this->area[cx][cy] = area[cx][cy];
+    //        this->area[cx][cy]->lock(); //Collision detected - wait another thread
+    //    }
+    //}
+}
+
+
+CellCluster::~CellCluster() {
+
+    //for (int cx = 0; cx < areaSize; ++cx) {
+    //    for (int cy = 0; cy < areaSize; ++cy) {
+    //     area[cx][cy]->unlock();
+    //    }
+    //}
+
+}
+
+void CellCluster::lock(Cell* area[areaSize][areaSize]) {
+
 
     this->area[0][0] = area[0][0];
     this->area[0][1] = area[0][1];
@@ -26,17 +50,9 @@ CellCluster::CellCluster(Cell* area[areaSize][areaSize]) {
     this->area[2][1]->lock();
     this->area[2][2]->lock();
 
-    //for (int cx = 0; cx < areaSize; ++cx) {
-    //    for (int cy = 0; cy < areaSize; ++cy) {
-    //        this->area[cx][cy] = area[cx][cy];
-    //        this->area[cx][cy]->lock(); //Collision detected - wait another thread
-    //    }
-    //}
 }
 
-CellCluster::~CellCluster() {
-
-
+void CellCluster::unlock() {
     area[0][0]->unlock();
     area[0][1]->unlock();
     area[0][2]->unlock();
@@ -48,15 +64,7 @@ CellCluster::~CellCluster() {
     area[2][0]->unlock();
     area[2][1]->unlock();
     area[2][2]->unlock();
-
-    //for (int cx = 0; cx < areaSize; ++cx) {
-    //    for (int cy = 0; cy < areaSize; ++cy) {
-    //     area[cx][cy]->unlock();
-    //    }
-    //}
-
 }
-
 
 //Возвращает 8 объектов вокруг искомого
 std::list<Cell*> CellCluster::getObjectsArround() {

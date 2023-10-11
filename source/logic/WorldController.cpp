@@ -14,14 +14,14 @@ WorldController::WorldController() : MyThreadLoop(NumThreads) {
     gameWorld = World::INSTANCE();
 }
 
-void WorldController::ObjectTick(Bot* tmpObj) {
+void WorldController::ObjectTick(Bot* tmpObj, int threadIndex) {
     
     //Object destroyed
     if (!tmpObj->isAlive) {
         return;
     }
     
-    CellCluster* cluster = this->gameWorld->getLockedCluster(tmpObj);
+    CellCluster* cluster = this->gameWorld->getLockedCluster(tmpObj, threadIndex);
     {
 
         tmpObj->tick();
@@ -85,7 +85,8 @@ void WorldController::ObjectTick(Bot* tmpObj) {
         
         
     }
-    delete cluster;
+    cluster->unlock();
+    //delete cluster; //Они теперь в пуле и их нельзя удалять
 
 }
 
@@ -94,6 +95,49 @@ std::mutex mutex;
 void WorldController::onTickStated() {
     gameWorld->startStep();
 }
+
+/*
+void WorldController::processTick(int threadIndex, long long poolTick) {
+    //Позиция с которой начать цикл по Х
+
+    const int stepSize = 3;
+
+    for (int i = 0; i < stepSize; i++) {
+
+        for (int heightIndex = 0; heightIndex < FieldCellsHeight; heightIndex++) {
+
+            //Ну тогда оно должно делиться на цело
+            for (int widthIndex = (threadIndex * stepSize)+ i; widthIndex  < FieldCellsWidth; widthIndex += NumThreads) {
+
+
+                Cell* cell = gameWorld->getCellPointer(widthIndex, heightIndex);
+
+                if (cell->isBot() && cell->getObjectPointer() != NULL) {
+
+                    Bot* tmpObj = (Bot*)gameWorld->GetObjectLocalCoords(widthIndex, heightIndex);
+                    if (tmpObj->lastUpdatedTick == poolTick) {
+                        continue;
+                    }
+
+                    if (tmpObj->isAlive == false) {
+                        cell->lock();
+                        cell->setEmpty();
+                        delete tmpObj;
+                        cell->unlock();
+                        continue;
+                    }
+                    this->ObjectTick(tmpObj);
+
+                    tmpObj->lastUpdatedTick = poolTick;
+                    //Sleep(10);
+                }
+
+            }
+
+        }
+    }
+
+}*/
 
 void WorldController::processTick(int threadIndex, long long poolTick) {
     int startedHeight = (FieldCellsHeight / NumThreads) * threadIndex;
@@ -126,7 +170,7 @@ void WorldController::processTick(int threadIndex, long long poolTick) {
                     cell->unlock();
                     continue;
                 }
-                this->ObjectTick(tmpObj);
+                this->ObjectTick(tmpObj, threadIndex);
 
                 tmpObj->lastUpdatedTick = poolTick;
                 //Sleep(10);

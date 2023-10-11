@@ -101,6 +101,8 @@
 
 //-----------------------------------------------------------------
 //Field
+//Don't touch
+constexpr int NumThreads = 32;
 
 #define FieldX InterfaceBorder
 #define FieldY InterfaceBorder
@@ -133,11 +135,6 @@ constexpr int FieldHeight = FieldCellSize * FieldCellsHeight;
 
 #define FieldBackgroundColor 255,255,255,255
 
-#define RockDrawColor 62, 62, 62, 255
-#define OrganicWasteDrawColor 0xC8C8C8FF
-#define OrganicWasteOutlineColor 0x808080FF
-#define AppleDrawColorRGBA 0x006400FF
-
 #define DrawOcean
 #define OceanColor 150,150,255,255		//Blue water
 //#define OceanColor 100,255,100,255	//Green water
@@ -160,7 +157,7 @@ constexpr int FieldHeight = FieldCellSize * FieldCellsHeight;
 
 //#define SpawnOneAtStart
 //#define SpawnControlGroupAtStart
-#define ControlGroupSize 100
+#define ControlGroupSize 10000
 
 //-----------------------------------------------------------------
 
@@ -169,7 +166,7 @@ constexpr int FieldHeight = FieldCellSize * FieldCellsHeight;
 //World rules
 
 #define FoodbaseInitial 6
-#define PhotosynthesisReward_Summer 4
+#define PhotosynthesisReward_Summer 6
 #define PhotosynthesisReward_Autumn 2
 #define PhotosynthesisReward_Winter 1
 

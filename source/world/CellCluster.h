@@ -18,8 +18,13 @@ class CellCluster {
 		std::shared_mutex mutex;
 
 	public:
-		CellCluster(Cell* area[areaSize][areaSize]);
+		CellCluster();
+
 		~CellCluster();
+
+		void lock(Cell* area[areaSize][areaSize]);
+
+		void unlock();
 
 		Cell* cell(int localXCoord, int localYCoord) {
 			int clusterXCoord = localXCoord + visibleDistance;
